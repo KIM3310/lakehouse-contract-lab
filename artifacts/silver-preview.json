@@ -1,7 +1,7 @@
 {
   "schema": "lakehouse-table-preview-v1",
   "layer": "silver",
-  "generatedAt": "2026-03-16T12:19:32+00:00",
+  "generatedAt": "2026-03-16T14:14:28+00:00",
   "rows": [
     {
       "order_id": "O-1001",
