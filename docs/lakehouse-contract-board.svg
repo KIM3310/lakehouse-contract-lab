@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<rect width="1280" height="720" fill="#07111f"/>
+<rect x="40" y="40" width="1200" height="640" rx="28" fill="#0f1728" stroke="#d7b268" stroke-width="2"/>
+<text x="80" y="110" fill="#d7b268" font-family="Georgia,serif" font-size="28">Lakehouse Contract Lab</text>
+<text x="80" y="150" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="18">Spark + Delta medallion proof with quality gates, Delta versions, and reviewer-fast platform posture.</text>
+<text x="80" y="210" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="22">Bronze 12 rows</text>
+<text x="440" y="210" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="22">Silver 8 accepted / 4 rejected</text>
+<text x="960" y="210" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="22">Gold 5 KPI rows</text>
+<rect x="80" y="260" width="260" height="240" rx="18" fill="#14223a" stroke="#2f4e77"/>
+<rect x="400" y="260" width="340" height="240" rx="18" fill="#132b24" stroke="#4e9f7d"/>
+<rect x="800" y="260" width="360" height="240" rx="18" fill="#2a2411" stroke="#d7b268"/>
+<text x="110" y="310" fill="#dce8ff" font-family="Arial,sans-serif" font-size="24">Bronze</text>
+<text x="430" y="310" fill="#ddf7eb" font-family="Arial,sans-serif" font-size="24">Silver</text>
+<text x="830" y="310" fill="#fff3d1" font-family="Arial,sans-serif" font-size="24">Gold</text>
+<text x="110" y="350" fill="#c7d4e9" font-family="Arial,sans-serif" font-size="18">Raw order envelope preserved</text>
+<text x="110" y="382" fill="#c7d4e9" font-family="Arial,sans-serif" font-size="18">Ingest timestamp attached</text>
+<text x="110" y="414" fill="#c7d4e9" font-family="Arial,sans-serif" font-size="18">Delta log version tracked</text>
+<text x="430" y="350" fill="#caefdd" font-family="Arial,sans-serif" font-size="18">Customer, region, and amount validated</text>
+<text x="430" y="382" fill="#caefdd" font-family="Arial,sans-serif" font-size="18">Latest duplicate survives</text>
+<text x="430" y="414" fill="#caefdd" font-family="Arial,sans-serif" font-size="18">Rejected rows retained for review</text>
+<text x="830" y="350" fill="#fbe9bc" font-family="Arial,sans-serif" font-size="18">Region KPI contract for platform teams</text>
+<text x="830" y="382" fill="#fbe9bc" font-family="Arial,sans-serif" font-size="18">Revenue, completed orders, active pipeline</text>
+<text x="830" y="414" fill="#fbe9bc" font-family="Arial,sans-serif" font-size="18">Delta-backed gold table summary</text>
+<path d="M340 380 L400 380" stroke="#d7b268" stroke-width="4" marker-end="url(#arrow)"/>
+<path d="M740 380 L800 380" stroke="#d7b268" stroke-width="4" marker-end="url(#arrow)"/>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#d7b268"/></marker></defs>
+<text x="80" y="560" fill="#d7b268" font-family="Arial,sans-serif" font-size="18">Quality gates</text>
+<text x="80" y="595" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="17">customer_present: 11 passed / 1 failed</text>
+<text x="80" y="623" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="17">region_present: 11 passed / 1 failed</text>
+<text x="80" y="651" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="17">positive_amount: 11 passed / 1 failed</text>
+<text x="80" y="679" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="17">latest_order_record: 8 passed / 1 failed</text>
+</svg>

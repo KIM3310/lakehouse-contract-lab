@@ -1,0 +1,120 @@
+{
+  "service": "lakehouse-contract-lab",
+  "status": "ok",
+  "generatedAt": "2026-03-16T11:28:38+00:00",
+  "schema": "lakehouse-proof-pack-v1",
+  "headline": "Spark + Delta medallion proof with explicit contract boundaries, quality gates, and reviewer-fast platform posture.",
+  "summary": {
+    "sourceRows": 12,
+    "bronzeRows": 12,
+    "silverAcceptedRows": 8,
+    "silverRejectedRows": 4,
+    "goldRows": 5,
+    "deltaTables": 3,
+    "qualityPassRatePct": 66.67
+  },
+  "tables": [
+    {
+      "layer": "bronze",
+      "tableName": "bronze_orders",
+      "deltaVersion": 0,
+      "rows": 12,
+      "contract": [
+        "raw order envelope preserved",
+        "ingested_at attached",
+        "source_rank retained for duplicate review"
+      ]
+    },
+    {
+      "layer": "silver",
+      "tableName": "silver_orders",
+      "deltaVersion": 0,
+      "rows": 8,
+      "contract": [
+        "customer and region required",
+        "amount must stay positive",
+        "latest duplicate only"
+      ]
+    },
+    {
+      "layer": "gold",
+      "tableName": "gold_region_kpis",
+      "deltaVersion": 0,
+      "rows": 5,
+      "contract": [
+        "region-level KPI output",
+        "completed and pipeline counts explicit",
+        "distinct customer count preserved"
+      ]
+    }
+  ],
+  "governance": {
+    "approvalBoundary": "Only silver-accepted rows can shape gold KPIs; rejected rows stay queryable for human review.",
+    "expectations": [
+      {
+        "name": "customer_present",
+        "layer": "silver",
+        "passed": 11,
+        "failed": 1,
+        "rule": "customer_id must be present before rows graduate into silver."
+      },
+      {
+        "name": "region_present",
+        "layer": "silver",
+        "passed": 11,
+        "failed": 1,
+        "rule": "region is required for downstream territory KPIs."
+      },
+      {
+        "name": "positive_amount",
+        "layer": "silver",
+        "passed": 11,
+        "failed": 1,
+        "rule": "non-positive revenue is isolated into rejected review rows."
+      },
+      {
+        "name": "latest_order_record",
+        "layer": "silver",
+        "passed": 8,
+        "failed": 1,
+        "rule": "only the latest duplicate order version can move into silver."
+      }
+    ],
+    "rejectedReasons": [
+      "missing_customer",
+      "missing_region",
+      "non_positive_amount",
+      "stale_duplicate"
+    ]
+  },
+  "snowflakeFit": {
+    "whyItMatters": "Shows contract-first medallion thinking, governed KPI outputs, and handoff-friendly review assets for solution engineering conversations.",
+    "reviewPath": [
+      "/api/runtime/lakehouse-proof-pack",
+      "/api/runtime/table-preview/gold",
+      "docs/lakehouse-contract-board.svg"
+    ]
+  },
+  "databricksFit": {
+    "whyItMatters": "Uses real Spark + Delta execution and exposes quality gates, Delta versions, and medallion transitions as explicit public proof.",
+    "reviewPath": [
+      "/api/runtime/lakehouse-proof-pack",
+      "/api/runtime/quality-report",
+      "scripts/build_lakehouse_artifacts.py"
+    ]
+  },
+  "proofAssets": [
+    "artifacts/lakehouse-proof-pack.json",
+    "artifacts/quality-report.json",
+    "docs/lakehouse-contract-board.svg",
+    "scripts/build_lakehouse_artifacts.py"
+  ],
+  "links": {
+    "health": "/health",
+    "proofPack": "/api/runtime/lakehouse-proof-pack",
+    "qualityReport": "/api/runtime/quality-report",
+    "bronzePreview": "/api/runtime/table-preview/bronze",
+    "silverPreview": "/api/runtime/table-preview/silver",
+    "goldPreview": "/api/runtime/table-preview/gold"
+  }
+}
