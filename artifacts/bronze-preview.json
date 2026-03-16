@@ -1,7 +1,7 @@
 {
   "schema": "lakehouse-table-preview-v1",
   "layer": "bronze",
-  "generatedAt": "2026-03-16T11:28:38+00:00",
+  "generatedAt": "2026-03-16T12:19:32+00:00",
   "rows": [
     {
       "order_id": "O-1001",
@@ -12,7 +12,7 @@
       "amount": 180.5,
       "currency": "USD",
       "order_ts": "2026-03-14T18:00:00",
-      "ingested_at": "2026-03-16T20:28:38",
+      "ingested_at": "2026-03-16T21:19:32",
       "source_rank": 0
     },
     {
@@ -24,7 +24,7 @@
       "amount": 220.0,
       "currency": "USD",
       "order_ts": "2026-03-14T21:20:00",
-      "ingested_at": "2026-03-16T20:28:38",
+      "ingested_at": "2026-03-16T21:19:32",
       "source_rank": 8589934596
     },
     {
@@ -36,7 +36,7 @@
       "amount": 220.0,
       "currency": "USD",
       "order_ts": "2026-03-14T18:20:00",
-      "ingested_at": "2026-03-16T20:28:38",
+      "ingested_at": "2026-03-16T21:19:32",
       "source_rank": 1
     },
     {
@@ -48,7 +48,7 @@
       "amount": 510.25,
       "currency": "USD",
       "order_ts": "2026-03-14T18:25:00",
-      "ingested_at": "2026-03-16T20:28:38",
+      "ingested_at": "2026-03-16T21:19:32",
       "source_rank": 2
     },
     {
@@ -60,7 +60,7 @@
       "amount": 305.1,
       "currency": "USD",
       "order_ts": "2026-03-14T19:00:00",
-      "ingested_at": "2026-03-16T20:28:38",
+      "ingested_at": "2026-03-16T21:19:32",
       "source_rank": 3
     }
   ]

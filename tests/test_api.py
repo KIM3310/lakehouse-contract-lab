@@ -17,7 +17,9 @@ def test_health_exposes_proof_routes() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["ok"] is True
+    assert payload["openai_refresh"]["deploymentMode"] == "artifact-refresh-only"
     assert payload["links"]["proofPack"] == "/api/runtime/lakehouse-proof-pack"
+    assert payload["links"]["reviewSummary"] == "/api/runtime/review-summary"
 
 
 def test_lakehouse_proof_pack_has_delta_and_quality_signals() -> None:
@@ -35,6 +37,10 @@ def test_quality_report_and_gold_preview_are_available() -> None:
     quality = client.get("/api/runtime/quality-report")
     assert quality.status_code == 200
     assert quality.json()["schema"] == "lakehouse-quality-report-v1"
+
+    review_summary = client.get("/api/runtime/review-summary")
+    assert review_summary.status_code == 200
+    assert review_summary.json()["schema"] == "lakehouse-review-summary-v1"
 
     gold = client.get("/api/runtime/table-preview/gold")
     assert gold.status_code == 200
