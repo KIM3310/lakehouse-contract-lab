@@ -1,0 +1,23 @@
+{
+  "schema": "lakehouse-review-summary-v1",
+  "service": "lakehouse-contract-lab",
+  "generatedAt": "2026-03-16T12:19:32+00:00",
+  "generationMode": "static-fallback",
+  "headline": "Refresh-only reviewer summary for Spark + Delta medallion proof.",
+  "summary": {
+    "platformFit": "snowflake-and-databricks-reviewable",
+    "qualityPosture": "quality-gates-visible",
+    "handoffPosture": "reviewer-safe-read-only",
+    "nextAction": "Review proof pack, quality report, and gold preview together before platform claims."
+  },
+  "reviewPath": [
+    "/api/runtime/lakehouse-proof-pack",
+    "/api/runtime/quality-report",
+    "/api/runtime/table-preview/gold"
+  ],
+  "proofAssets": [
+    "artifacts/lakehouse-proof-pack.json",
+    "artifacts/quality-report.json",
+    "docs/lakehouse-contract-board.svg"
+  ]
+}

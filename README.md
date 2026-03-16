@@ -56,6 +56,7 @@ This repo answers that directly:
 - Health: `GET /health`
 - Proof pack: `GET /api/runtime/lakehouse-proof-pack`
 - Quality report: `GET /api/runtime/quality-report`
+- Review summary: `GET /api/runtime/review-summary`
 - Bronze preview: `GET /api/runtime/table-preview/bronze`
 - Silver preview: `GET /api/runtime/table-preview/silver`
 - Gold preview: `GET /api/runtime/table-preview/gold`
@@ -76,4 +77,5 @@ lakehouse-contract-lab/
 
 - This is a checked-in public proof surface, not a claim of production customer traffic.
 - The strongest signal is explicit Spark + Delta execution plus reviewer-readable contract output.
+- OpenAI, when configured, is used only for refresh-only reviewer summaries. This repo does not expose a public arbitrary inference route.
 - Use this repo together with `Nexus-Hive` and `enterprise-llm-adoption-kit` for the complete Snowflake / Databricks / solutions architecture story.

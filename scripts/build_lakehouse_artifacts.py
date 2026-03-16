@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
@@ -18,6 +20,8 @@ DELTA_DIR = ARTIFACTS_DIR / "runtime_delta"
 DOCS_DIR = ROOT / "docs"
 
 NOW = datetime.now(timezone.utc).replace(microsecond=0)
+OPENAI_BASE_URL = "https://api.openai.com/v1"
+DEFAULT_OPENAI_REFRESH_MODEL = "gpt-5.2"
 
 SOURCE_ROWS = [
     {
@@ -203,6 +207,112 @@ def latest_delta_version(table_path: Path) -> int | None:
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def build_review_summary_artifact(proof_pack: dict[str, Any], quality_report: dict[str, Any]) -> dict[str, Any]:
+    fallback = {
+        "schema": "lakehouse-review-summary-v1",
+        "service": proof_pack["service"],
+        "generatedAt": NOW.isoformat(),
+        "generationMode": "static-fallback",
+        "headline": "Refresh-only reviewer summary for Spark + Delta medallion proof.",
+        "summary": {
+            "platformFit": "snowflake-and-databricks-reviewable",
+            "qualityPosture": "quality-gates-visible",
+            "handoffPosture": "reviewer-safe-read-only",
+            "nextAction": "Review proof pack, quality report, and gold preview together before platform claims.",
+        },
+        "reviewPath": [
+            "/api/runtime/lakehouse-proof-pack",
+            "/api/runtime/quality-report",
+            "/api/runtime/table-preview/gold",
+        ],
+        "proofAssets": [
+            "artifacts/lakehouse-proof-pack.json",
+            "artifacts/quality-report.json",
+            "docs/lakehouse-contract-board.svg",
+        ],
+    }
+    api_key = str(os.getenv("OPENAI_API_KEY", "")).strip()
+    if not api_key:
+        return fallback
+
+    schema = {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "headline": {"type": "string"},
+            "platformFit": {"type": "string"},
+            "qualityPosture": {"type": "string"},
+            "handoffPosture": {"type": "string"},
+            "nextAction": {"type": "string"},
+        },
+        "required": [
+            "headline",
+            "platformFit",
+            "qualityPosture",
+            "handoffPosture",
+            "nextAction",
+        ],
+    }
+    request = urllib.request.Request(
+        f"{OPENAI_BASE_URL}/chat/completions",
+        data=json.dumps(
+            {
+                "model": str(os.getenv("OPENAI_MODEL_REFRESH", "")).strip() or DEFAULT_OPENAI_REFRESH_MODEL,
+                "temperature": 0.2,
+                "response_format": {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "lakehouse_review_summary",
+                        "schema": schema,
+                    },
+                },
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Summarize the lakehouse proof pack for reviewer-safe field engineering handoff. Return JSON only.",
+                    },
+                    {
+                        "role": "user",
+                        "content": json.dumps(
+                            {
+                                "proof_pack": proof_pack["summary"],
+                                "quality_report": quality_report["summary"],
+                            }
+                        ),
+                    },
+                ],
+            }
+        ).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            body = json.loads(response.read().decode("utf-8"))
+        content = str((((body.get("choices") or [{}])[0].get("message") or {}).get("content") or "")).strip()
+        parsed = json.loads(content)
+        return {
+            "schema": "lakehouse-review-summary-v1",
+            "service": proof_pack["service"],
+            "generatedAt": NOW.isoformat(),
+            "generationMode": "openai-refresh",
+            "headline": parsed["headline"],
+            "summary": {
+                "platformFit": parsed["platformFit"],
+                "qualityPosture": parsed["qualityPosture"],
+                "handoffPosture": parsed["handoffPosture"],
+                "nextAction": parsed["nextAction"],
+            },
+            "reviewPath": fallback["reviewPath"],
+            "proofAssets": fallback["proofAssets"],
+        }
+    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, KeyError, TypeError, ValueError):
+        return fallback
 
 
 def build_svg(proof_pack: dict[str, Any]) -> None:
@@ -526,6 +636,7 @@ def main() -> None:
 
     write_json(ARTIFACTS_DIR / "lakehouse-proof-pack.json", proof_pack)
     write_json(ARTIFACTS_DIR / "quality-report.json", quality_report)
+    write_json(ARTIFACTS_DIR / "review-summary.json", build_review_summary_artifact(proof_pack, quality_report))
     write_json(ARTIFACTS_DIR / "bronze-preview.json", bronze_preview)
     write_json(ARTIFACTS_DIR / "silver-preview.json", silver_preview)
     write_json(ARTIFACTS_DIR / "gold-preview.json", gold_preview)
@@ -535,4 +646,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
