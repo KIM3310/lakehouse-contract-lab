@@ -21,7 +21,7 @@ DOCS_DIR = ROOT / "docs"
 
 NOW = datetime.now(timezone.utc).replace(microsecond=0)
 OPENAI_BASE_URL = "https://api.openai.com/v1"
-DEFAULT_OPENAI_REFRESH_MODEL = "gpt-5.2"
+DEFAULT_OPENAI_REFRESH_MODEL = "gpt-4o"
 
 SOURCE_ROWS = [
     {
