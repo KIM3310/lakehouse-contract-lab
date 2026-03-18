@@ -25,7 +25,7 @@ def _openai_refresh_contract() -> dict:
         "deploymentMode": "artifact-refresh-only",
         "publicLiveApi": False,
         "liveModel": "",
-        "refreshModel": (os.getenv("OPENAI_MODEL_REFRESH") or "gpt-5.2").strip(),
+        "refreshModel": (os.getenv("OPENAI_MODEL_REFRESH") or "gpt-4o").strip(),
         "dailyBudgetUsd": 0.0,
         "monthlyBudgetUsd": 120.0 if api_key else 0.0,
         "killSwitch": False,
