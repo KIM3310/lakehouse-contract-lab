@@ -1,0 +1,23 @@
+# =============================================================================
+# Lakehouse Contract Lab - Terraform Variables (example)
+# Copy to terraform.tfvars and fill in your values.
+# =============================================================================
+
+project_name = "lakehouse-contract-lab"
+environment  = "dev"
+
+# AWS
+aws_region     = "us-east-1"
+s3_force_destroy = true  # Set to false in production
+
+# GCP
+gcp_project_id          = "your-gcp-project-id"
+gcp_region              = "us-central1"
+cloud_run_image         = "gcr.io/your-project/lakehouse-contract-lab:latest"
+cloud_run_max_instances = 3
+cloud_run_min_instances = 0
+
+tags = {
+  Team  = "data-engineering"
+  Owner = "your-name"
+}

@@ -1,9 +1,35 @@
+# Python
 .venv/
 __pycache__/
 .pytest_cache/
-artifacts/runtime_delta/
 *.pyc
 *.egg-info/
+.coverage
+htmlcov/
+coverage.xml
+
+# Spark / Delta
+artifacts/runtime_delta/
+spark-warehouse/
+metastore_db/
+derby.log
+
+# Environment
 .env
 .env.*
+!.env.example
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/.terraform.lock.hcl
+infra/terraform/terraform.tfvars
+
+# IDE
 .DS_Store
+.idea/
+.vscode/
+
+# Ruff
+.ruff_cache/
