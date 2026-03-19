@@ -3,3 +3,4 @@ __pycache__/
 .pytest_cache/
 artifacts/runtime_delta/
 
+lakehouse_contract_lab.egg-info/
