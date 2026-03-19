@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import sys
 import types
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 
@@ -363,7 +363,7 @@ class TestUtilities:
 
     def test_normalize_value_datetime(self, bla) -> None:
         """datetime values should be converted to ISO-8601 strings."""
-        dt = datetime(2026, 3, 14, 9, 0, 0, tzinfo=UTC)
+        dt = datetime(2026, 3, 14, 9, 0, 0, tzinfo=timezone.utc)
         assert bla.normalize_value(dt) == dt.isoformat()
 
     def test_normalize_value_decimal(self, bla) -> None:
