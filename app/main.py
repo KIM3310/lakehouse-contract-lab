@@ -23,8 +23,39 @@ app = FastAPI(
     title="Lakehouse Contract Lab",
     version="1.0.0",
     description=(
-        "Spark + Delta lakehouse service for medallion contracts and data quality gates."
+        "Spark + Delta Lake medallion pipeline API with explicit contract boundaries, "
+        "data quality gates, and multi-cloud export support.\n\n"
+        "## Medallion Layers\n\n"
+        "- **Bronze** -- raw order ingestion with metadata tracking\n"
+        "- **Silver** -- quality gates (customer, region, amount) + deduplication\n"
+        "- **Gold** -- region-level KPI aggregations for BI consumption\n\n"
+        "## Quality Gates\n\n"
+        "| Rule | Description |\n"
+        "|------|-------------|\n"
+        "| `customer_present` | customer_id must not be null |\n"
+        "| `region_present` | region must not be null |\n"
+        "| `positive_amount` | amount must be > 0 |\n"
+        "| `latest_record` | dedup by order_id, keep newest |\n"
     ),
+    openapi_tags=[
+        {
+            "name": "health",
+            "description": "Service health and discovery endpoints.",
+        },
+        {
+            "name": "pipeline",
+            "description": "Pipeline artifact endpoints (proof pack, quality report, review summary).",
+        },
+        {
+            "name": "preview",
+            "description": "Table preview endpoints for each medallion layer.",
+        },
+    ],
+    docs_url="/docs",
+    redoc_url="/redoc",
+    license_info={
+        "name": "MIT",
+    },
 )
 
 LAYER_ARTIFACT_MAP: dict[str, str] = {
@@ -79,7 +110,7 @@ def _load_json(filename: str) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-@app.get("/health")
+@app.get("/health", tags=["health"])
 def health() -> dict[str, Any]:
     """Return service health status with links to all proof-pack endpoints."""
     logger.info("Health check requested")
@@ -100,28 +131,28 @@ def health() -> dict[str, Any]:
     }
 
 
-@app.get("/api/runtime/lakehouse-proof-pack")
+@app.get("/api/runtime/lakehouse-proof-pack", tags=["pipeline"])
 def lakehouse_proof_pack() -> dict[str, Any]:
-    """Return the full lakehouse proof-pack artifact."""
+    """Return the full lakehouse proof-pack artifact including pipeline summary, Delta table metadata, governance expectations, and platform fit assessments."""
     logger.info("Serving lakehouse-proof-pack")
     return _load_json("lakehouse-proof-pack.json")
 
 
-@app.get("/api/runtime/quality-report")
+@app.get("/api/runtime/quality-report", tags=["pipeline"])
 def quality_report() -> dict[str, Any]:
     """Return the quality report with expectation results and rejected row previews."""
     logger.info("Serving quality-report")
     return _load_json("quality-report.json")
 
 
-@app.get("/api/runtime/review-summary")
+@app.get("/api/runtime/review-summary", tags=["pipeline"])
 def review_summary() -> dict[str, Any]:
     """Return the review summary for reviewer handoff."""
     logger.info("Serving review-summary")
     return _load_json("review-summary.json")
 
 
-@app.get("/api/runtime/table-preview/{layer}")
+@app.get("/api/runtime/table-preview/{layer}", tags=["preview"])
 def table_preview(layer: str) -> dict[str, Any]:
     """Return a preview of rows from the specified medallion layer.
 
