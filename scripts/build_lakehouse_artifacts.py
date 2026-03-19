@@ -13,7 +13,7 @@ import os
 import shutil
 import urllib.error
 import urllib.request
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -33,7 +33,7 @@ ARTIFACTS_DIR: Path = ROOT / "artifacts"
 DELTA_DIR: Path = ARTIFACTS_DIR / "runtime_delta"
 DOCS_DIR: Path = ROOT / "docs"
 
-NOW: datetime = datetime.now(UTC).replace(microsecond=0)
+NOW: datetime = datetime.now(timezone.utc).replace(microsecond=0)
 OPENAI_BASE_URL: str = "https://api.openai.com/v1"
 DEFAULT_OPENAI_REFRESH_MODEL: str = "gpt-4o"
 
