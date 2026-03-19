@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import shutil
 import urllib.error
@@ -9,6 +10,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 from delta import configure_spark_with_delta_pip
 from pyspark.sql import DataFrame, SparkSession, Window
@@ -311,7 +314,8 @@ def build_review_summary_artifact(proof_pack: dict[str, Any], quality_report: di
             "reviewPath": fallback["reviewPath"],
             "proofAssets": fallback["proofAssets"],
         }
-    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, KeyError, TypeError, ValueError):
+    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+        logger.warning("OpenAI review-summary refresh failed (%s: %s); using static fallback", type(exc).__name__, exc)
         return fallback
 
 
