@@ -3,7 +3,7 @@
 <rect width="1280" height="720" fill="#07111f"/>
 <rect x="40" y="40" width="1200" height="640" rx="28" fill="#0f1728" stroke="#d7b268" stroke-width="2"/>
 <text x="80" y="110" fill="#d7b268" font-family="Georgia,serif" font-size="28">Lakehouse Contract Lab</text>
-<text x="80" y="150" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="18">Spark + Delta medallion proof with quality gates, Delta versions, and reviewer-fast platform posture.</text>
+<text x="80" y="150" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="18">Spark + Delta medallion pipeline with quality gates and Delta version tracking.</text>
 <text x="80" y="210" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="22">Bronze 12 rows</text>
 <text x="440" y="210" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="22">Silver 8 accepted / 4 rejected</text>
 <text x="960" y="210" fill="#f6f3ec" font-family="Arial,sans-serif" font-size="22">Gold 5 KPI rows</text>

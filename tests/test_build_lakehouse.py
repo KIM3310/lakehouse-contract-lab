@@ -228,7 +228,7 @@ class TestSvgBoardGeneration:
         assert "positive_amount" in content
 
     def test_svg_contains_row_counts(self, bla, tmp_path: Path, monkeypatch) -> None:
-        """SVG must display the actual row counts from the proof pack."""
+        """SVG must display the actual row counts from the pipeline output."""
         monkeypatch.setattr(bla, "DOCS_DIR", tmp_path)
         bla.build_svg(self._make_proof_pack())
         content = (tmp_path / "lakehouse-contract-board.svg").read_text()

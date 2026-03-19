@@ -3,7 +3,7 @@
   "status": "ok",
   "generatedAt": "2026-03-16T14:14:28+00:00",
   "schema": "lakehouse-proof-pack-v1",
-  "headline": "Spark + Delta medallion proof with explicit contract boundaries, quality gates, and reviewer-fast platform posture.",
+  "headline": "Spark + Delta medallion pipeline with contract boundaries, quality gates, and Delta version tracking.",
   "summary": {
     "sourceRows": 12,
     "bronzeRows": 12,

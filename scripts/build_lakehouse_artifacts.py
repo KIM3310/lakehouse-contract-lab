@@ -304,7 +304,7 @@ def build_review_summary_artifact(
             "platformFit": "snowflake-and-databricks-reviewable",
             "qualityPosture": "quality-gates-visible",
             "handoffPosture": "reviewer-safe-read-only",
-            "nextAction": "Review proof pack, quality report, and gold preview together before platform claims.",
+            "nextAction": "Check quality report and gold preview together before making platform claims.",
         },
         "reviewPath": [
             "/api/runtime/lakehouse-proof-pack",
@@ -357,7 +357,7 @@ def build_review_summary_artifact(
                 "messages": [
                     {
                         "role": "system",
-                        "content": "Summarize the lakehouse proof pack for reviewer-safe field engineering handoff. Return JSON only.",
+                        "content": "Summarize the lakehouse pipeline output for a field engineering handoff. Return JSON only.",
                     },
                     {
                         "role": "user",
@@ -421,7 +421,7 @@ def build_svg(proof_pack: dict[str, Any]) -> None:
         "<rect width=\"1280\" height=\"720\" fill=\"#07111f\"/>",
         "<rect x=\"40\" y=\"40\" width=\"1200\" height=\"640\" rx=\"28\" fill=\"#0f1728\" stroke=\"#d7b268\" stroke-width=\"2\"/>",
         "<text x=\"80\" y=\"110\" fill=\"#d7b268\" font-family=\"Georgia,serif\" font-size=\"28\">Lakehouse Contract Lab</text>",
-        "<text x=\"80\" y=\"150\" fill=\"#f6f3ec\" font-family=\"Arial,sans-serif\" font-size=\"18\">Spark + Delta medallion proof with quality gates, Delta versions, and reviewer-fast platform posture.</text>",
+        "<text x=\"80\" y=\"150\" fill=\"#f6f3ec\" font-family=\"Arial,sans-serif\" font-size=\"18\">Spark + Delta medallion pipeline with quality gates and Delta version tracking.</text>",
         f"<text x=\"80\" y=\"210\" fill=\"#f6f3ec\" font-family=\"Arial,sans-serif\" font-size=\"22\">Bronze {summary['bronzeRows']} rows</text>",
         f"<text x=\"440\" y=\"210\" fill=\"#f6f3ec\" font-family=\"Arial,sans-serif\" font-size=\"22\">Silver {summary['silverAcceptedRows']} accepted / {summary['silverRejectedRows']} rejected</text>",
         f"<text x=\"960\" y=\"210\" fill=\"#f6f3ec\" font-family=\"Arial,sans-serif\" font-size=\"22\">Gold {summary['goldRows']} KPI rows</text>",
@@ -609,7 +609,7 @@ def main() -> None:
         "schema": "lakehouse-proof-pack-v1",
         "headline": (
             "Spark + Delta medallion proof with explicit contract boundaries, "
-            "quality gates, and reviewer-fast platform posture."
+            "quality gates, and Delta version tracking."
         ),
         "summary": {
             "sourceRows": len(SOURCE_ROWS),
