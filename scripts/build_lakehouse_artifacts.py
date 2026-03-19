@@ -1,3 +1,10 @@
+"""Build lakehouse medallion pipeline artifacts using Spark and Delta Lake.
+
+Executes the full bronze -> silver -> gold medallion pipeline on sample order
+data, applies quality gates, writes Delta tables, and generates JSON artifacts
+plus an SVG architecture board for reviewer consumption.
+"""
+
 from __future__ import annotations
 
 import json
@@ -6,27 +13,31 @@ import os
 import shutil
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)-8s %(name)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 from delta import configure_spark_with_delta_pip
 from pyspark.sql import DataFrame, SparkSession, Window
-from pyspark.sql import functions as F
+from pyspark.sql import functions as F  # noqa: N812
 
-ROOT = Path(__file__).resolve().parents[1]
-ARTIFACTS_DIR = ROOT / "artifacts"
-DELTA_DIR = ARTIFACTS_DIR / "runtime_delta"
-DOCS_DIR = ROOT / "docs"
+ROOT: Path = Path(__file__).resolve().parents[1]
+ARTIFACTS_DIR: Path = ROOT / "artifacts"
+DELTA_DIR: Path = ARTIFACTS_DIR / "runtime_delta"
+DOCS_DIR: Path = ROOT / "docs"
 
-NOW = datetime.now(timezone.utc).replace(microsecond=0)
-OPENAI_BASE_URL = "https://api.openai.com/v1"
-DEFAULT_OPENAI_REFRESH_MODEL = "gpt-4o"
+NOW: datetime = datetime.now(UTC).replace(microsecond=0)
+OPENAI_BASE_URL: str = "https://api.openai.com/v1"
+DEFAULT_OPENAI_REFRESH_MODEL: str = "gpt-4o"
 
-SOURCE_ROWS = [
+SOURCE_ROWS: list[dict[str, Any]] = [
     {
         "order_id": "O-1001",
         "customer_id": "C-001",
@@ -151,17 +162,29 @@ SOURCE_ROWS = [
 
 
 def ensure_java_home() -> None:
+    """Detect and set JAVA_HOME if not already configured.
+
+    Also sets ``SPARK_LOCAL_IP`` to ``127.0.0.1`` for local Spark execution.
+    """
     if os.environ.get("JAVA_HOME"):
+        logger.debug("JAVA_HOME already set: %s", os.environ["JAVA_HOME"])
         os.environ.setdefault("SPARK_LOCAL_IP", "127.0.0.1")
         return
     java_home = Path("/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home")
     if java_home.exists():
         os.environ["JAVA_HOME"] = str(java_home)
+        logger.info("Auto-detected JAVA_HOME: %s", java_home)
     os.environ.setdefault("SPARK_LOCAL_IP", "127.0.0.1")
 
 
 def build_spark() -> SparkSession:
+    """Create and return a local Spark session configured for Delta Lake.
+
+    Returns:
+        A ``SparkSession`` with Delta Lake extensions enabled.
+    """
     ensure_java_home()
+    logger.info("Building Spark session with Delta Lake support")
     builder = (
         SparkSession.builder.appName("lakehouse-contract-lab")
         .master("local[2]")
@@ -178,6 +201,17 @@ def build_spark() -> SparkSession:
 
 
 def normalize_value(value: Any) -> Any:
+    """Normalize a value for JSON serialization.
+
+    Converts ``datetime`` instances to ISO-8601 strings and ``Decimal``
+    instances to plain ``float`` values.  All other types pass through.
+
+    Args:
+        value: The value to normalize.
+
+    Returns:
+        A JSON-serializable representation of *value*.
+    """
     if isinstance(value, datetime):
         return value.isoformat()
     if isinstance(value, Decimal):
@@ -185,7 +219,21 @@ def normalize_value(value: Any) -> Any:
     return value
 
 
-def rows_to_json(df: DataFrame, order_by: list[str], limit: int = 5) -> list[dict[str, Any]]:
+def rows_to_json(
+    df: DataFrame,
+    order_by: list[str],
+    limit: int = 5,
+) -> list[dict[str, Any]]:
+    """Collect Spark DataFrame rows as a list of JSON-serializable dicts.
+
+    Args:
+        df: Source DataFrame.
+        order_by: Column names to sort by before collecting.
+        limit: Maximum number of rows to return.
+
+    Returns:
+        A list of dictionaries with normalized values.
+    """
     rows = (
         df.orderBy(*order_by).limit(limit).collect()
         if order_by
@@ -198,8 +246,17 @@ def rows_to_json(df: DataFrame, order_by: list[str], limit: int = 5) -> list[dic
 
 
 def latest_delta_version(table_path: Path) -> int | None:
-    log_dir = table_path / "_delta_log"
-    versions = [
+    """Return the latest Delta log version number for a table, or ``None``.
+
+    Args:
+        table_path: Root path of the Delta table.
+
+    Returns:
+        The highest commit version found in ``_delta_log/``, or ``None`` if
+        no log entries exist.
+    """
+    log_dir: Path = table_path / "_delta_log"
+    versions: list[int] = [
         int(path.stem)
         for path in log_dir.glob("*.json")
         if path.stem.isdigit()
@@ -208,12 +265,36 @@ def latest_delta_version(table_path: Path) -> int | None:
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
+    """Write a dictionary to a JSON file, creating parent directories as needed.
+
+    Args:
+        path: Destination file path.
+        payload: Data to serialize.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    logger.info("Wrote artifact: %s", path.name)
 
 
-def build_review_summary_artifact(proof_pack: dict[str, Any], quality_report: dict[str, Any]) -> dict[str, Any]:
-    fallback = {
+def build_review_summary_artifact(
+    proof_pack: dict[str, Any],
+    quality_report: dict[str, Any],
+) -> dict[str, Any]:
+    """Build the review-summary artifact, optionally using OpenAI for enrichment.
+
+    When an ``OPENAI_API_KEY`` environment variable is present, the summary
+    is generated via the OpenAI chat completions API.  Otherwise a static
+    fallback is returned.
+
+    Args:
+        proof_pack: The lakehouse proof-pack dictionary.
+        quality_report: The quality report dictionary.
+
+    Returns:
+        A review-summary artifact dictionary conforming to
+        ``lakehouse-review-summary-v1``.
+    """
+    fallback: dict[str, Any] = {
         "schema": "lakehouse-review-summary-v1",
         "service": proof_pack["service"],
         "generatedAt": NOW.isoformat(),
@@ -236,11 +317,13 @@ def build_review_summary_artifact(proof_pack: dict[str, Any], quality_report: di
             "docs/lakehouse-contract-board.svg",
         ],
     }
-    api_key = str(os.getenv("OPENAI_API_KEY", "")).strip()
+    api_key: str = str(os.getenv("OPENAI_API_KEY", "")).strip()
     if not api_key:
+        logger.info("No OPENAI_API_KEY set; using static fallback for review summary")
         return fallback
 
-    schema = {
+    logger.info("Requesting OpenAI-enriched review summary")
+    schema: dict[str, Any] = {
         "type": "object",
         "additionalProperties": False,
         "properties": {
@@ -296,9 +379,10 @@ def build_review_summary_artifact(proof_pack: dict[str, Any], quality_report: di
     )
     try:
         with urllib.request.urlopen(request, timeout=20) as response:
-            body = json.loads(response.read().decode("utf-8"))
-        content = str((((body.get("choices") or [{}])[0].get("message") or {}).get("content") or "")).strip()
-        parsed = json.loads(content)
+            body: dict[str, Any] = json.loads(response.read().decode("utf-8"))
+        content: str = str(((body.get("choices") or [{}])[0].get("message") or {}).get("content") or "").strip()
+        parsed: dict[str, str] = json.loads(content)
+        logger.info("OpenAI review summary generated successfully")
         return {
             "schema": "lakehouse-review-summary-v1",
             "service": proof_pack["service"],
@@ -320,9 +404,18 @@ def build_review_summary_artifact(proof_pack: dict[str, Any], quality_report: di
 
 
 def build_svg(proof_pack: dict[str, Any]) -> None:
-    summary = proof_pack["summary"]
-    expectations = proof_pack["governance"]["expectations"]
-    lines = [
+    """Generate an SVG architecture board from the proof-pack summary.
+
+    Writes ``docs/lakehouse-contract-board.svg`` illustrating the three
+    medallion layers, row counts, and quality gate results.
+
+    Args:
+        proof_pack: The lakehouse proof-pack dictionary.
+    """
+    logger.info("Generating SVG architecture board")
+    summary: dict[str, Any] = proof_pack["summary"]
+    expectations: list[dict[str, Any]] = proof_pack["governance"]["expectations"]
+    lines: list[str] = [
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
         "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1280\" height=\"720\" viewBox=\"0 0 1280 720\">",
         "<rect width=\"1280\" height=\"720\" fill=\"#07111f\"/>",
@@ -352,7 +445,7 @@ def build_svg(proof_pack: dict[str, Any]) -> None:
         "<defs><marker id=\"arrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 z\" fill=\"#d7b268\"/></marker></defs>",
         "<text x=\"80\" y=\"560\" fill=\"#d7b268\" font-family=\"Arial,sans-serif\" font-size=\"18\">Quality gates</text>",
     ]
-    y = 595
+    y: int = 595
     for expectation in expectations:
         lines.append(
             f"<text x=\"80\" y=\"{y}\" fill=\"#f6f3ec\" font-family=\"Arial,sans-serif\" font-size=\"17\">{expectation['name']}: {expectation['passed']} passed / {expectation['failed']} failed</text>"
@@ -366,25 +459,41 @@ def build_svg(proof_pack: dict[str, Any]) -> None:
     (DOCS_DIR / "lakehouse-contract-board.svg").write_text(
         "\n".join(lines), encoding="utf-8"
     )
+    logger.info("SVG board written to docs/lakehouse-contract-board.svg")
 
 
 def main() -> None:
-    spark = build_spark()
+    """Execute the full medallion pipeline and generate all artifacts.
+
+    Steps:
+        1. Build a local Spark session with Delta support.
+        2. Ingest source rows into the bronze layer.
+        3. Apply quality gates and deduplication to produce silver.
+        4. Aggregate silver into gold-level region KPIs.
+        5. Write Delta tables and JSON artifact files.
+        6. Generate the SVG architecture board.
+    """
+    logger.info("Starting lakehouse artifact build")
+    spark: SparkSession = build_spark()
     spark.sparkContext.setLogLevel("ERROR")
+
     if DELTA_DIR.exists():
         shutil.rmtree(DELTA_DIR)
+        logger.info("Cleaned previous Delta directory")
     DELTA_DIR.mkdir(parents=True, exist_ok=True)
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
 
-    source = (
+    # --- Bronze layer: raw ingestion ---
+    logger.info("Building bronze layer from %d source rows", len(SOURCE_ROWS))
+    source: DataFrame = (
         spark.createDataFrame(SOURCE_ROWS)
         .withColumn("ingested_at", F.to_timestamp(F.lit(NOW.isoformat())))
         .withColumn("source_rank", F.monotonically_increasing_id())
         .withColumn("order_ts", F.to_timestamp("order_ts"))
     )
 
-    bronze = source.select(
+    bronze: DataFrame = source.select(
         "order_id",
         "customer_id",
         "region",
@@ -397,6 +506,8 @@ def main() -> None:
         "source_rank",
     )
 
+    # --- Silver layer: quality gates + dedup ---
+    logger.info("Applying quality gates and deduplication for silver layer")
     rule = (
         F.when(F.col("customer_id").isNull(), F.lit("missing_customer"))
         .when(F.col("region").isNull(), F.lit("missing_region"))
@@ -406,7 +517,7 @@ def main() -> None:
     window = Window.partitionBy("order_id").orderBy(
         F.col("order_ts").desc(), F.col("source_rank").desc()
     )
-    staged = (
+    staged: DataFrame = (
         bronze.withColumn("quality_issue", rule)
         .withColumn("row_rank", F.row_number().over(window))
         .withColumn(
@@ -416,9 +527,12 @@ def main() -> None:
             .otherwise(F.lit(None)),
         )
     )
-    silver = staged.filter(F.col("rejection_reason").isNull())
-    rejected = staged.filter(F.col("rejection_reason").isNotNull())
-    gold = (
+    silver: DataFrame = staged.filter(F.col("rejection_reason").isNull())
+    rejected: DataFrame = staged.filter(F.col("rejection_reason").isNotNull())
+
+    # --- Gold layer: region KPI aggregation ---
+    logger.info("Aggregating gold-layer region KPIs")
+    gold: DataFrame = (
         silver.groupBy("region")
         .agg(
             F.round(F.sum("amount"), 2).alias("gross_revenue_usd"),
@@ -434,21 +548,29 @@ def main() -> None:
         .orderBy("region")
     )
 
-    table_specs = {
+    # --- Write Delta tables ---
+    table_specs: dict[str, tuple[DataFrame, Path]] = {
         "bronze": (bronze, DELTA_DIR / "bronze_orders"),
         "silver": (silver, DELTA_DIR / "silver_orders"),
         "gold": (gold, DELTA_DIR / "gold_region_kpis"),
     }
-    for _, (df, path) in table_specs.items():
+    for layer_name, (df, path) in table_specs.items():
         df.write.format("delta").mode("overwrite").save(str(path))
+        logger.info("Delta table written: %s -> %s", layer_name, path.name)
 
-    bronze_count = bronze.count()
-    silver_count = silver.count()
-    rejected_count = rejected.count()
-    gold_count = gold.count()
-    pass_rate = round((silver_count / bronze_count) * 100, 2)
+    # --- Compute metrics ---
+    bronze_count: int = bronze.count()
+    silver_count: int = silver.count()
+    rejected_count: int = rejected.count()
+    gold_count: int = gold.count()
+    pass_rate: float = round((silver_count / bronze_count) * 100, 2)
 
-    expectations = [
+    logger.info(
+        "Pipeline metrics: bronze=%d silver=%d rejected=%d gold=%d pass_rate=%.2f%%",
+        bronze_count, silver_count, rejected_count, gold_count, pass_rate,
+    )
+
+    expectations: list[dict[str, Any]] = [
         {
             "name": "customer_present",
             "layer": "silver",
@@ -479,7 +601,8 @@ def main() -> None:
         },
     ]
 
-    proof_pack = {
+    # --- Build artifacts ---
+    proof_pack: dict[str, Any] = {
         "service": "lakehouse-contract-lab",
         "status": "ok",
         "generatedAt": NOW.isoformat(),
@@ -585,7 +708,7 @@ def main() -> None:
         },
     }
 
-    quality_report = {
+    quality_report: dict[str, Any] = {
         "service": "lakehouse-contract-lab",
         "generatedAt": NOW.isoformat(),
         "schema": "lakehouse-quality-report-v1",
@@ -608,13 +731,13 @@ def main() -> None:
         ),
     }
 
-    bronze_preview = {
+    bronze_preview: dict[str, Any] = {
         "schema": "lakehouse-table-preview-v1",
         "layer": "bronze",
         "generatedAt": NOW.isoformat(),
         "rows": rows_to_json(bronze, ["order_id"], limit=5),
     }
-    silver_preview = {
+    silver_preview: dict[str, Any] = {
         "schema": "lakehouse-table-preview-v1",
         "layer": "silver",
         "generatedAt": NOW.isoformat(),
@@ -631,7 +754,7 @@ def main() -> None:
             limit=5,
         ),
     }
-    gold_preview = {
+    gold_preview: dict[str, Any] = {
         "schema": "lakehouse-table-preview-v1",
         "layer": "gold",
         "generatedAt": NOW.isoformat(),
@@ -645,7 +768,9 @@ def main() -> None:
     write_json(ARTIFACTS_DIR / "silver-preview.json", silver_preview)
     write_json(ARTIFACTS_DIR / "gold-preview.json", gold_preview)
     build_svg(proof_pack)
+
     spark.stop()
+    logger.info("Lakehouse artifact build complete")
 
 
 if __name__ == "__main__":

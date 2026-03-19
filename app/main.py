@@ -1,13 +1,23 @@
+"""FastAPI application exposing lakehouse proof-pack artifacts and contract surfaces.
+
+Endpoints serve pre-built JSON artifacts from the medallion pipeline,
+including the proof pack, quality report, review summary, and layer previews.
+"""
+
 from __future__ import annotations
 
 import json
+import logging
 import os
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, HTTPException
 
-ROOT = Path(__file__).resolve().parents[1]
-ARTIFACTS_DIR = ROOT / "artifacts"
+logger = logging.getLogger(__name__)
+
+ROOT: Path = Path(__file__).resolve().parents[1]
+ARTIFACTS_DIR: Path = ROOT / "artifacts"
 
 app = FastAPI(
     title="Lakehouse Contract Lab",
@@ -18,9 +28,20 @@ app = FastAPI(
     ),
 )
 
+LAYER_ARTIFACT_MAP: dict[str, str] = {
+    "bronze": "bronze-preview.json",
+    "silver": "silver-preview.json",
+    "gold": "gold-preview.json",
+}
 
-def _openai_refresh_contract() -> dict:
-    api_key = (os.getenv("OPENAI_API_KEY") or "").strip()
+
+def _openai_refresh_contract() -> dict[str, Any]:
+    """Return the OpenAI refresh contract configuration.
+
+    Describes deployment mode, budget caps, and moderation settings
+    for the optional OpenAI-powered artifact refresh feature.
+    """
+    api_key: str = (os.getenv("OPENAI_API_KEY") or "").strip()
     return {
         "deploymentMode": "artifact-refresh-only",
         "publicLiveApi": False,
@@ -33,9 +54,21 @@ def _openai_refresh_contract() -> dict:
     }
 
 
-def _load_json(filename: str) -> dict:
-    path = ARTIFACTS_DIR / filename
+def _load_json(filename: str) -> dict[str, Any]:
+    """Load and parse a JSON artifact file from the artifacts directory.
+
+    Args:
+        filename: Name of the JSON file to load (e.g. ``"lakehouse-proof-pack.json"``).
+
+    Returns:
+        Parsed JSON content as a dictionary.
+
+    Raises:
+        HTTPException: If the artifact file does not exist (HTTP 503).
+    """
+    path: Path = ARTIFACTS_DIR / filename
     if not path.exists():
+        logger.error("Artifact missing: %s (looked at %s)", filename, path)
         raise HTTPException(
             status_code=503,
             detail=(
@@ -43,12 +76,15 @@ def _load_json(filename: str) -> dict:
                 "python scripts/build_lakehouse_artifacts.py first."
             ),
         )
+    logger.debug("Loading artifact: %s", filename)
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 @app.get("/health")
-def health() -> dict:
-    proof = _load_json("lakehouse-proof-pack.json")
+def health() -> dict[str, Any]:
+    """Return service health status with links to all proof-pack endpoints."""
+    logger.info("Health check requested")
+    proof: dict[str, Any] = _load_json("lakehouse-proof-pack.json")
     return {
         "ok": True,
         "service": proof["service"],
@@ -66,28 +102,39 @@ def health() -> dict:
 
 
 @app.get("/api/runtime/lakehouse-proof-pack")
-def lakehouse_proof_pack() -> dict:
+def lakehouse_proof_pack() -> dict[str, Any]:
+    """Return the full lakehouse proof-pack artifact."""
+    logger.info("Serving lakehouse-proof-pack")
     return _load_json("lakehouse-proof-pack.json")
 
 
 @app.get("/api/runtime/quality-report")
-def quality_report() -> dict:
+def quality_report() -> dict[str, Any]:
+    """Return the quality report with expectation results and rejected row previews."""
+    logger.info("Serving quality-report")
     return _load_json("quality-report.json")
 
 
 @app.get("/api/runtime/review-summary")
-def review_summary() -> dict:
+def review_summary() -> dict[str, Any]:
+    """Return the review summary for reviewer handoff."""
+    logger.info("Serving review-summary")
     return _load_json("review-summary.json")
 
 
 @app.get("/api/runtime/table-preview/{layer}")
-def table_preview(layer: str) -> dict:
-    mapping = {
-        "bronze": "bronze-preview.json",
-        "silver": "silver-preview.json",
-        "gold": "gold-preview.json",
-    }
-    filename = mapping.get(layer.lower())
+def table_preview(layer: str) -> dict[str, Any]:
+    """Return a preview of rows from the specified medallion layer.
+
+    Args:
+        layer: One of ``bronze``, ``silver``, or ``gold``.
+
+    Raises:
+        HTTPException: If the layer name is not recognized (HTTP 404).
+    """
+    filename: str | None = LAYER_ARTIFACT_MAP.get(layer.lower())
     if filename is None:
+        logger.warning("Unknown layer requested: %s", layer)
         raise HTTPException(status_code=404, detail="Unknown layer")
+    logger.info("Serving table-preview for layer=%s", layer)
     return _load_json(filename)
