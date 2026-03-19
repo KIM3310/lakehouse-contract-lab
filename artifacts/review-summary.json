@@ -3,11 +3,11 @@
   "service": "lakehouse-contract-lab",
   "generatedAt": "2026-03-16T14:14:28+00:00",
   "generationMode": "openai-refresh",
-  "headline": "Lakehouse proof pack shows end-to-end ingestion and curation with measurable data-quality outcomes (66.67% pass rate) across Bronze\u2192Silver\u2192Gold.",
+  "headline": "End-to-end medallion pipeline with measurable data-quality outcomes (66.67% pass rate) across Bronze, Silver, and Gold.",
   "summary": {
     "platformFit": "Delta Lake pattern validated: 12 source rows landed to Bronze (12), curated in Silver with explicit accept/reject handling (8 accepted, 4 rejected), and aggregated/served to Gold (5). Three Delta tables created, indicating a minimal but complete lakehouse footprint.",
-    "qualityPosture": "Quality controls are active and producing auditable results: 8/12 rows accepted, 4/12 failed (66.67% pass). Rejected rows are explicitly tracked (SilverRejectedRows=4), supporting reviewer-safe traceability and remediation workflows.",
-    "handoffPosture": "Ready for field engineering handoff with clear counts at each layer and a reconciled quality report matching the proof pack. Key implementation artifacts implied: Delta tables for Bronze/Silver/Gold, and a deterministic rule set driving Silver acceptance/rejection.",
+    "qualityPosture": "Quality controls are active and producing auditable results: 8/12 rows accepted, 4/12 failed (66.67% pass). Rejected rows are explicitly tracked (SilverRejectedRows=4) for traceability and remediation.",
+    "handoffPosture": "Clear counts at each layer with a reconciled quality report. Delta tables for Bronze/Silver/Gold and a deterministic rule set driving Silver acceptance/rejection.",
     "nextAction": "Provide FE with (1) the exact DQ rule definitions and failure reasons for the 4 rejected rows, (2) table names/paths and schema for the 3 Delta tables, and (3) a runbook to reprocess after fixes and target a higher pass rate (e.g., \u226595%) plus row-count reconciliation checks."
   },
   "reviewPath": [

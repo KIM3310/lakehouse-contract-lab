@@ -1,7 +1,7 @@
 """FastAPI application exposing lakehouse proof-pack artifacts and contract surfaces.
 
 Endpoints serve pre-built JSON artifacts from the medallion pipeline,
-including the proof pack, quality report, review summary, and layer previews.
+including the pipeline output, quality report, review summary, and layer previews.
 """
 
 from __future__ import annotations
@@ -23,8 +23,7 @@ app = FastAPI(
     title="Lakehouse Contract Lab",
     version="1.0.0",
     description=(
-        "Spark + Delta public proof surface for medallion contracts, data quality "
-        "gates, and reviewer-ready architecture posture."
+        "Spark + Delta lakehouse service for medallion contracts and data quality gates."
     ),
 )
 
