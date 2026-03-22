@@ -2,10 +2,14 @@
 # Lakehouse Contract Lab - Makefile
 # =============================================================================
 
-.PHONY: install test lint format build docker-build docker-run docker-down pipeline clean help
+.PHONY: install test lint format build smoke verify docker-build docker-run docker-down pipeline clean help
 
-PYTHON ?= python3
 VENV   := .venv
+VENV_PY := $(VENV)/bin/python
+PYTHON ?= python3
+ifeq ($(wildcard $(VENV_PY)), $(VENV_PY))
+PYTHON := $(VENV_PY)
+endif
 PIP    := $(VENV)/bin/pip
 PYTEST := $(VENV)/bin/pytest
 RUFF   := $(VENV)/bin/ruff
@@ -41,6 +45,25 @@ format-check: ## Check formatting without modifying files
 
 build: ## Run the medallion pipeline and generate artifacts
 	$(PYTHON) scripts/build_lakehouse_artifacts.py
+
+smoke: build ## Boot local API and smoke key runtime surfaces
+	@set -eu; \
+	PORT=8097; \
+	LOG=/tmp/lakehouse-contract-lab-smoke.log; \
+	$(UVICORN) app.main:app --host 127.0.0.1 --port $$PORT >$$LOG 2>&1 & \
+	pid=$$!; \
+	trap 'kill $$pid >/dev/null 2>&1 || true' EXIT INT TERM; \
+	for _ in 1 2 3 4 5 6 7 8 9 10; do \
+		if curl -fsS "http://127.0.0.1:$$PORT/health" >/dev/null 2>&1; then \
+			break; \
+		fi; \
+		sleep 1; \
+	done; \
+	curl -fsS "http://127.0.0.1:$$PORT/health" >/dev/null; \
+	curl -fsS "http://127.0.0.1:$$PORT/api/runtime/quality-report" >/dev/null; \
+	echo "smoke ok: http://127.0.0.1:$$PORT"
+
+verify: pipeline smoke ## Full local verification including artifact build and API smoke
 
 serve: ## Start the FastAPI development server
 	$(UVICORN) app.main:app --host 127.0.0.1 --port $(APP_PORT) --reload

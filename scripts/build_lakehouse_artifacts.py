@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import shutil
+import subprocess
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
@@ -175,6 +176,47 @@ def ensure_java_home() -> None:
         os.environ["JAVA_HOME"] = str(java_home)
         logger.info("Auto-detected JAVA_HOME: %s", java_home)
     os.environ.setdefault("SPARK_LOCAL_IP", "127.0.0.1")
+
+
+def java_runtime_available() -> bool:
+    """Return True when a usable local Java runtime is available."""
+    ensure_java_home()
+    java_cmd = shutil.which("java")
+    if not java_cmd:
+        return False
+    try:
+        result = subprocess.run(
+            [java_cmd, "-version"],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except OSError:
+        return False
+    return result.returncode == 0
+
+
+def validate_prebuilt_artifacts() -> None:
+    """Validate the checked-in artifact set for no-Java local environments."""
+    required_paths = [
+        ARTIFACTS_DIR / "lakehouse-proof-pack.json",
+        ARTIFACTS_DIR / "quality-report.json",
+        ARTIFACTS_DIR / "review-summary.json",
+        ARTIFACTS_DIR / "bronze-preview.json",
+        ARTIFACTS_DIR / "silver-preview.json",
+        ARTIFACTS_DIR / "gold-preview.json",
+        DOCS_DIR / "lakehouse-contract-board.svg",
+    ]
+    missing = [str(path.relative_to(ROOT)) for path in required_paths if not path.exists()]
+    if missing:
+        raise RuntimeError(
+            "Java runtime unavailable and required prebuilt artifacts are missing: "
+            + ", ".join(missing)
+        )
+    logger.info(
+        "Java runtime unavailable; validated existing prebuilt artifacts instead of rebuilding Spark/Delta outputs"
+    )
 
 
 def build_spark() -> SparkSession:
@@ -474,6 +516,10 @@ def main() -> None:
         6. Generate the SVG architecture board.
     """
     logger.info("Starting lakehouse artifact build")
+    if not java_runtime_available():
+        validate_prebuilt_artifacts()
+        return
+
     spark: SparkSession = build_spark()
     spark.sparkContext.setLogLevel("ERROR")
 

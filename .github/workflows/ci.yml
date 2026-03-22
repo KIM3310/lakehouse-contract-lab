@@ -44,6 +44,14 @@ jobs:
             --cov-report=term-missing \
             --cov-report=xml:coverage.xml
 
+      - name: Build medallion artifacts
+        if: matrix.python-version == '3.11'
+        run: make build
+
+      - name: API smoke
+        if: matrix.python-version == '3.11'
+        run: make smoke
+
       - name: Upload coverage report
         if: matrix.python-version == '3.11'
         uses: actions/upload-artifact@v4
