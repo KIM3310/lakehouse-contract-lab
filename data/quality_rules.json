@@ -1,0 +1,26 @@
+[
+  {
+    "name": "customer_present",
+    "layer": "silver",
+    "rule": "customer_id must be present before rows graduate into silver.",
+    "rejected_label": "missing_customer"
+  },
+  {
+    "name": "region_present",
+    "layer": "silver",
+    "rule": "region is required for downstream territory KPIs.",
+    "rejected_label": "missing_region"
+  },
+  {
+    "name": "positive_amount",
+    "layer": "silver",
+    "rule": "non-positive revenue is isolated into rejected review rows.",
+    "rejected_label": "non_positive_amount"
+  },
+  {
+    "name": "latest_order_record",
+    "layer": "silver",
+    "rule": "only the latest duplicate order version can move into silver.",
+    "rejected_label": "stale_duplicate"
+  }
+]

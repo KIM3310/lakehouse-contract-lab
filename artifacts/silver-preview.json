@@ -1,0 +1,47 @@
+{
+  "schema": "lakehouse-table-preview-v1",
+  "layer": "silver",
+  "generatedAt": "2026-03-16T14:14:28+00:00",
+  "rows": [
+    {
+      "order_id": "O-1001",
+      "customer_id": "C-001",
+      "region": "KR-SEOUL",
+      "status": "completed",
+      "amount": 180.5,
+      "currency": "USD"
+    },
+    {
+      "order_id": "O-1002",
+      "customer_id": "C-002",
+      "region": "KR-BUSAN",
+      "status": "completed",
+      "amount": 220.0,
+      "currency": "USD"
+    },
+    {
+      "order_id": "O-1003",
+      "customer_id": "C-003",
+      "region": "JP-TOKYO",
+      "status": "completed",
+      "amount": 510.25,
+      "currency": "USD"
+    },
+    {
+      "order_id": "O-1004",
+      "customer_id": "C-004",
+      "region": "US-WEST",
+      "status": "completed",
+      "amount": 305.1,
+      "currency": "USD"
+    },
+    {
+      "order_id": "O-1005",
+      "customer_id": "C-005",
+      "region": "US-WEST",
+      "status": "cancelled",
+      "amount": 80.0,
+      "currency": "USD"
+    }
+  ]
+}

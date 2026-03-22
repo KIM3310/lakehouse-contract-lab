@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Snowflake",
+    "activation": "SNOWFLAKE_ACCOUNT / SNOWFLAKE_USER / SNOWFLAKE_PASSWORD",
+    "role": "gold KPI warehouse target"
+  },
+  {
+    "name": "Databricks Unity Catalog",
+    "activation": "DATABRICKS_HOST / (DATABRICKS_CONFIG_PROFILE or DATABRICKS_CLIENT_ID+DATABRICKS_CLIENT_SECRET or DATABRICKS_TOKEN)",
+    "role": "Delta table target for governed analytics"
+  },
+  {
+    "name": "AWS S3",
+    "activation": "AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / S3_ARTIFACT_BUCKET",
+    "role": "artifact storage target"
+  },
+  {
+    "name": "GCP Cloud Run",
+    "activation": "Terraform variables and gcloud auth",
+    "role": "container deployment target"
+  }
+]

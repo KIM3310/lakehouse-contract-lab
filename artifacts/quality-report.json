@@ -1,0 +1,70 @@
+{
+  "service": "lakehouse-contract-lab",
+  "generatedAt": "2026-03-16T14:14:28+00:00",
+  "schema": "lakehouse-quality-report-v1",
+  "summary": {
+    "acceptedRows": 8,
+    "failedRows": 4,
+    "qualityPassRatePct": 66.67
+  },
+  "expectations": [
+    {
+      "name": "customer_present",
+      "layer": "silver",
+      "passed": 11,
+      "failed": 1,
+      "rule": "customer_id must be present before rows graduate into silver."
+    },
+    {
+      "name": "region_present",
+      "layer": "silver",
+      "passed": 11,
+      "failed": 1,
+      "rule": "region is required for downstream territory KPIs."
+    },
+    {
+      "name": "positive_amount",
+      "layer": "silver",
+      "passed": 11,
+      "failed": 1,
+      "rule": "non-positive revenue is isolated into rejected review rows."
+    },
+    {
+      "name": "latest_order_record",
+      "layer": "silver",
+      "passed": 8,
+      "failed": 1,
+      "rule": "only the latest duplicate order version can move into silver."
+    }
+  ],
+  "rejectedPreview": [
+    {
+      "order_id": "O-1002",
+      "customer_id": "C-002",
+      "region": "KR-BUSAN",
+      "amount": 220.0,
+      "rejection_reason": "stale_duplicate"
+    },
+    {
+      "order_id": "O-1008",
+      "customer_id": null,
+      "region": "KR-SEOUL",
+      "amount": 330.0,
+      "rejection_reason": "missing_customer"
+    },
+    {
+      "order_id": "O-1009",
+      "customer_id": "C-009",
+      "region": null,
+      "amount": 190.0,
+      "rejection_reason": "missing_region"
+    },
+    {
+      "order_id": "O-1010",
+      "customer_id": "C-010",
+      "region": "JP-TOKYO",
+      "amount": -15.0,
+      "rejection_reason": "non_positive_amount"
+    }
+  ]
+}
