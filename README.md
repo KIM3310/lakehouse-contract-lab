@@ -1,6 +1,6 @@
 # Lakehouse Contract Lab
 
-[![CI](https://github.com/your-username/lakehouse-contract-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/lakehouse-contract-lab/actions/workflows/ci.yml)
+[![CI](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
@@ -68,7 +68,7 @@ A production-grade **Spark + Delta Lake** medallion pipeline with explicit contr
 
 ```bash
 # Clone and set up
-git clone https://github.com/your-username/lakehouse-contract-lab.git
+git clone https://github.com/KIM3310/lakehouse-contract-lab.git
 cd lakehouse-contract-lab
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -98,6 +98,8 @@ make docker-run
 ```
 
 The API will be available at `http://localhost:8096` with a healthcheck on `/health`.
+
+> Local note: on machines without a working Java 17 runtime, `make build` / `make smoke` fall back to validating the checked-in proof artifacts. The Docker image still performs the full Spark + Delta rebuild.
 
 ---
 
@@ -207,6 +209,8 @@ make build       # Build pipeline artifacts
 make docker-build  # Build Docker image
 make docker-run    # Run via Docker Compose
 make pipeline    # Full pipeline: lint + test + build
+make smoke       # Local API smoke on top of built artifacts
+make verify      # Pipeline + runtime smoke
 ```
 
 ### Running Tests
@@ -224,14 +228,15 @@ pytest tests/test_build_lakehouse.py::TestMedallionSourceContract -v
 
 ---
 
-## Screenshots / Demo
+## Review / demo checklist
 
-> **TODO**: Add screenshots of:
-> - Swagger UI showing all endpoints
-> - Sample `/health` response
-> - Gold layer preview JSON output
-> - SVG architecture board rendering
-> - Terraform plan output
+Suggested proof surfaces for reviewers:
+
+- Swagger UI with all runtime endpoints
+- sample `/health` response showing proof-pack links
+- gold layer preview JSON payload
+- `docs/lakehouse-contract-board.svg` architecture board
+- Terraform plan / cloud-export notes from `infra/terraform/`
 
 ---
 

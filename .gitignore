@@ -33,3 +33,4 @@ infra/terraform/terraform.tfvars
 
 # Ruff
 .ruff_cache/
+.omc/
