@@ -121,6 +121,13 @@ def health() -> dict[str, Any]:
         "status": proof["status"],
         "schema": "lakehouse-contract-health-v1",
         "generatedAt": proof["generatedAt"],
+        "reviewerFastPath": [
+            "/health",
+            "/api/runtime/lakehouse-proof-pack",
+            "/api/runtime/quality-report",
+            "/api/runtime/review-summary",
+            "/api/runtime/table-preview/gold",
+        ],
         "openai_refresh": _openai_refresh_contract(),
         "links": {
             "proofPack": "/api/runtime/lakehouse-proof-pack",

@@ -101,6 +101,16 @@ The API will be available at `http://localhost:8096` with a healthcheck on `/hea
 
 > Local note: on machines without a working Java 17 runtime, `make build` / `make smoke` fall back to validating the checked-in proof artifacts. The Docker image still performs the full Spark + Delta rebuild.
 
+## Reviewer Fast Path
+
+Recommended first-pass review order:
+
+1. `GET /health` — verify the service contract and proof routes
+2. `GET /api/runtime/lakehouse-proof-pack` — inspect the full medallion proof bundle
+3. `GET /api/runtime/quality-report` — read the quality gates before trusting metrics
+4. `GET /api/runtime/review-summary` — compress the current run into a reviewer summary
+5. `GET /api/runtime/table-preview/gold` — inspect the governed KPI output directly
+
 ---
 
 ## API Documentation

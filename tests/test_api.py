@@ -43,6 +43,7 @@ class TestHealthEndpoint:
         """Health payload must include links to all proof-pack routes."""
         payload: dict[str, Any] = client.get("/health").json()
         assert payload["openai_refresh"]["deploymentMode"] == "artifact-refresh-only"
+        assert payload["reviewerFastPath"][0] == "/health"
         assert payload["links"]["proofPack"] == "/api/runtime/lakehouse-proof-pack"
         assert payload["links"]["reviewSummary"] == "/api/runtime/review-summary"
 
