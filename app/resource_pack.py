@@ -9,6 +9,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
+EXTERNAL_DIR = DATA_DIR / "external" / "olist"
 
 
 def data_files() -> dict[str, Path]:
@@ -58,4 +59,37 @@ def resource_pack_summary() -> dict[str, Any]:
         "quality_rule_count": len(load_quality_rules()),
         "export_target_count": len(load_export_targets()),
         "validation_case_count": len(load_validation_cases()),
+        "external_file_count": len([p for p in EXTERNAL_DIR.iterdir() if p.is_file()]) if EXTERNAL_DIR.exists() else 0,
     }
+
+
+def external_data_summary() -> dict[str, Any]:
+    files = {
+        name: EXTERNAL_DIR / name
+        for name in [
+            "olist_customers_dataset.csv",
+            "olist_order_items_dataset.csv",
+            "olist_order_payments_dataset.csv",
+            "olist_orders_dataset.csv",
+            "olist_products_dataset.csv",
+            "product_category_name_translation.csv",
+        ]
+    }
+    return {
+        "present": EXTERNAL_DIR.exists(),
+        "files": {
+            name: {
+                "path": str(path.relative_to(ROOT)),
+                "present": path.exists(),
+                "row_count": _count_csv_rows(path),
+            }
+            for name, path in files.items()
+        },
+    }
+
+
+def _count_csv_rows(path: Path) -> int:
+    if not path.exists():
+        return 0
+    with path.open(newline="", encoding="utf-8") as handle:
+        return max(0, sum(1 for _ in csv.reader(handle)) - 1)

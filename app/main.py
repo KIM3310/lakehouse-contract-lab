@@ -14,6 +14,8 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException
 
+from app.resource_pack import external_data_summary
+
 logger = logging.getLogger(__name__)
 
 ROOT: Path = Path(__file__).resolve().parents[1]
@@ -169,7 +171,9 @@ def review_summary() -> dict[str, Any]:
 def source_pack() -> dict[str, Any]:
     """Return the synthetic source/resource pack used to build the medallion proof."""
     logger.info("Serving source-pack")
-    return _load_json("source-pack.json")
+    payload = _load_json("source-pack.json")
+    payload["externalData"] = external_data_summary()
+    return payload
 
 
 @app.get("/api/runtime/table-preview/{layer}", tags=["preview"])
