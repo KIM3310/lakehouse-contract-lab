@@ -91,6 +91,7 @@
     "whyItMatters": "Shows contract-first medallion thinking, governed KPI outputs, and handoff-friendly review assets for solution engineering conversations.",
     "reviewPath": [
       "/api/runtime/lakehouse-proof-pack",
+      "/api/runtime/source-pack",
       "/api/runtime/table-preview/gold",
       "docs/lakehouse-contract-board.svg"
     ]
@@ -107,7 +108,11 @@
     "artifacts/lakehouse-proof-pack.json",
     "artifacts/quality-report.json",
     "docs/lakehouse-contract-board.svg",
-    "scripts/build_lakehouse_artifacts.py"
+    "scripts/build_lakehouse_artifacts.py",
+    "data/source_orders.csv",
+    "data/quality_rules.json",
+    "data/export_targets.json",
+    "data/validation_cases.json"
   ],
   "links": {
     "health": "/health",
@@ -115,6 +120,87 @@
     "qualityReport": "/api/runtime/quality-report",
     "bronzePreview": "/api/runtime/table-preview/bronze",
     "silverPreview": "/api/runtime/table-preview/silver",
-    "goldPreview": "/api/runtime/table-preview/gold"
+    "goldPreview": "/api/runtime/table-preview/gold",
+    "sourcePack": "/api/runtime/source-pack"
+  },
+  "resourcePack": {
+    "source_row_count": 12,
+    "quality_rule_count": 4,
+    "export_target_count": 4,
+    "validation_case_count": 4,
+    "qualityRules": [
+      {
+        "name": "customer_present",
+        "layer": "silver",
+        "rule": "customer_id must be present before rows graduate into silver.",
+        "rejected_label": "missing_customer"
+      },
+      {
+        "name": "region_present",
+        "layer": "silver",
+        "rule": "region is required for downstream territory KPIs.",
+        "rejected_label": "missing_region"
+      },
+      {
+        "name": "positive_amount",
+        "layer": "silver",
+        "rule": "non-positive revenue is isolated into rejected review rows.",
+        "rejected_label": "non_positive_amount"
+      },
+      {
+        "name": "latest_order_record",
+        "layer": "silver",
+        "rule": "only the latest duplicate order version can move into silver.",
+        "rejected_label": "stale_duplicate"
+      }
+    ],
+    "exportTargets": [
+      {
+        "name": "Snowflake",
+        "activation": "SNOWFLAKE_ACCOUNT / SNOWFLAKE_USER / SNOWFLAKE_PASSWORD",
+        "role": "gold KPI warehouse target"
+      },
+      {
+        "name": "Databricks Unity Catalog",
+        "activation": "DATABRICKS_HOST / DATABRICKS_TOKEN",
+        "role": "Delta table target for governed analytics"
+      },
+      {
+        "name": "AWS S3",
+        "activation": "AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / S3_ARTIFACT_BUCKET",
+        "role": "artifact storage target"
+      },
+      {
+        "name": "GCP Cloud Run",
+        "activation": "Terraform variables and gcloud auth",
+        "role": "container deployment target"
+      }
+    ],
+    "validationCases": [
+      {
+        "case_id": "LHC-VAL-01",
+        "focus": "null customer handling",
+        "assertion": "Rows with missing customer_id should stay in rejected review rows.",
+        "expected_status": "pass"
+      },
+      {
+        "case_id": "LHC-VAL-02",
+        "focus": "null region handling",
+        "assertion": "Rows with missing region should not reach gold KPI outputs.",
+        "expected_status": "pass"
+      },
+      {
+        "case_id": "LHC-VAL-03",
+        "focus": "non-positive revenue",
+        "assertion": "Rows with amount <= 0 should be isolated with a review reason.",
+        "expected_status": "pass"
+      },
+      {
+        "case_id": "LHC-VAL-04",
+        "focus": "duplicate order resolution",
+        "assertion": "Only the latest duplicate order version should survive into silver.",
+        "expected_status": "pass"
+      }
+    ]
   }
 }

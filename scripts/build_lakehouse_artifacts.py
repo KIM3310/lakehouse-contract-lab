@@ -29,6 +29,15 @@ from delta import configure_spark_with_delta_pip
 from pyspark.sql import DataFrame, SparkSession, Window
 from pyspark.sql import functions as F  # noqa: N812
 
+from app.resource_pack import (
+    data_files,
+    load_export_targets,
+    load_quality_rules,
+    load_source_rows,
+    load_validation_cases,
+    resource_pack_summary,
+)
+
 ROOT: Path = Path(__file__).resolve().parents[1]
 ARTIFACTS_DIR: Path = ROOT / "artifacts"
 DELTA_DIR: Path = ARTIFACTS_DIR / "runtime_delta"
@@ -38,128 +47,7 @@ NOW: datetime = datetime.now(timezone.utc).replace(microsecond=0)
 OPENAI_BASE_URL: str = "https://api.openai.com/v1"
 DEFAULT_OPENAI_REFRESH_MODEL: str = "gpt-4o"
 
-SOURCE_ROWS: list[dict[str, Any]] = [
-    {
-        "order_id": "O-1001",
-        "customer_id": "C-001",
-        "region": "KR-SEOUL",
-        "channel": "web",
-        "status": "completed",
-        "amount": 180.50,
-        "currency": "USD",
-        "order_ts": "2026-03-14T09:00:00Z",
-    },
-    {
-        "order_id": "O-1002",
-        "customer_id": "C-002",
-        "region": "KR-BUSAN",
-        "channel": "partner",
-        "status": "processing",
-        "amount": 220.00,
-        "currency": "USD",
-        "order_ts": "2026-03-14T09:20:00Z",
-    },
-    {
-        "order_id": "O-1003",
-        "customer_id": "C-003",
-        "region": "JP-TOKYO",
-        "channel": "field",
-        "status": "completed",
-        "amount": 510.25,
-        "currency": "USD",
-        "order_ts": "2026-03-14T09:25:00Z",
-    },
-    {
-        "order_id": "O-1004",
-        "customer_id": "C-004",
-        "region": "US-WEST",
-        "channel": "web",
-        "status": "completed",
-        "amount": 305.10,
-        "currency": "USD",
-        "order_ts": "2026-03-14T10:00:00Z",
-    },
-    {
-        "order_id": "O-1005",
-        "customer_id": "C-005",
-        "region": "US-WEST",
-        "channel": "web",
-        "status": "cancelled",
-        "amount": 80.00,
-        "currency": "USD",
-        "order_ts": "2026-03-14T10:05:00Z",
-    },
-    {
-        "order_id": "O-1006",
-        "customer_id": "C-006",
-        "region": "DE-BERLIN",
-        "channel": "field",
-        "status": "completed",
-        "amount": 410.75,
-        "currency": "USD",
-        "order_ts": "2026-03-14T10:25:00Z",
-    },
-    {
-        "order_id": "O-1007",
-        "customer_id": "C-007",
-        "region": "KR-SEOUL",
-        "channel": "partner",
-        "status": "processing",
-        "amount": 260.40,
-        "currency": "USD",
-        "order_ts": "2026-03-14T10:35:00Z",
-    },
-    {
-        "order_id": "O-1008",
-        "customer_id": None,
-        "region": "KR-SEOUL",
-        "channel": "web",
-        "status": "completed",
-        "amount": 330.00,
-        "currency": "USD",
-        "order_ts": "2026-03-14T11:00:00Z",
-    },
-    {
-        "order_id": "O-1009",
-        "customer_id": "C-009",
-        "region": None,
-        "channel": "partner",
-        "status": "completed",
-        "amount": 190.00,
-        "currency": "USD",
-        "order_ts": "2026-03-14T11:12:00Z",
-    },
-    {
-        "order_id": "O-1010",
-        "customer_id": "C-010",
-        "region": "JP-TOKYO",
-        "channel": "field",
-        "status": "completed",
-        "amount": -15.00,
-        "currency": "USD",
-        "order_ts": "2026-03-14T11:20:00Z",
-    },
-    {
-        "order_id": "O-1002",
-        "customer_id": "C-002",
-        "region": "KR-BUSAN",
-        "channel": "partner",
-        "status": "completed",
-        "amount": 220.00,
-        "currency": "USD",
-        "order_ts": "2026-03-14T12:20:00Z",
-    },
-    {
-        "order_id": "O-1011",
-        "customer_id": "C-011",
-        "region": "US-WEST",
-        "channel": "web",
-        "status": "processing",
-        "amount": 125.25,
-        "currency": "USD",
-        "order_ts": "2026-03-14T12:30:00Z",
-    },
-]
+SOURCE_ROWS: list[dict[str, Any]] = load_source_rows()
 
 
 def ensure_java_home() -> None:
@@ -666,6 +554,12 @@ def main() -> None:
             "deltaTables": 3,
             "qualityPassRatePct": pass_rate,
         },
+        "resourcePack": {
+            **resource_pack_summary(),
+            "qualityRules": load_quality_rules(),
+            "exportTargets": load_export_targets(),
+            "validationCases": load_validation_cases(),
+        },
         "tables": [
             {
                 "layer": "bronze",
@@ -743,6 +637,7 @@ def main() -> None:
             "artifacts/quality-report.json",
             "docs/lakehouse-contract-board.svg",
             "scripts/build_lakehouse_artifacts.py",
+            *[f"data/{path.name}" for path in data_files().values()],
         ],
         "links": {
             "health": "/health",
@@ -810,6 +705,18 @@ def main() -> None:
     write_json(ARTIFACTS_DIR / "lakehouse-proof-pack.json", proof_pack)
     write_json(ARTIFACTS_DIR / "quality-report.json", quality_report)
     write_json(ARTIFACTS_DIR / "review-summary.json", build_review_summary_artifact(proof_pack, quality_report))
+    write_json(
+        ARTIFACTS_DIR / "source-pack.json",
+        {
+            "schema": "lakehouse-source-pack-v1",
+            "generatedAt": NOW.isoformat(),
+            "summary": resource_pack_summary(),
+            "sourceRows": SOURCE_ROWS,
+            "qualityRules": load_quality_rules(),
+            "exportTargets": load_export_targets(),
+            "validationCases": load_validation_cases(),
+        },
+    )
     write_json(ARTIFACTS_DIR / "bronze-preview.json", bronze_preview)
     write_json(ARTIFACTS_DIR / "silver-preview.json", silver_preview)
     write_json(ARTIFACTS_DIR / "gold-preview.json", gold_preview)

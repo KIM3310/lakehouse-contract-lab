@@ -47,6 +47,10 @@ app = FastAPI(
             "description": "Pipeline artifact endpoints (proof pack, quality report, review summary).",
         },
         {
+            "name": "resources",
+            "description": "Synthetic source data, quality rules, and validation-case inspection surfaces.",
+        },
+        {
             "name": "preview",
             "description": "Table preview endpoints for each medallion layer.",
         },
@@ -124,6 +128,7 @@ def health() -> dict[str, Any]:
         "reviewerFastPath": [
             "/health",
             "/api/runtime/lakehouse-proof-pack",
+            "/api/runtime/source-pack",
             "/api/runtime/quality-report",
             "/api/runtime/review-summary",
             "/api/runtime/table-preview/gold",
@@ -131,6 +136,7 @@ def health() -> dict[str, Any]:
         "openai_refresh": _openai_refresh_contract(),
         "links": {
             "proofPack": "/api/runtime/lakehouse-proof-pack",
+            "sourcePack": "/api/runtime/source-pack",
             "qualityReport": "/api/runtime/quality-report",
             "reviewSummary": "/api/runtime/review-summary",
             "goldPreview": "/api/runtime/table-preview/gold",
@@ -157,6 +163,13 @@ def review_summary() -> dict[str, Any]:
     """Return the review summary for reviewer handoff."""
     logger.info("Serving review-summary")
     return _load_json("review-summary.json")
+
+
+@app.get("/api/runtime/source-pack", tags=["resources"])
+def source_pack() -> dict[str, Any]:
+    """Return the synthetic source/resource pack used to build the medallion proof."""
+    logger.info("Serving source-pack")
+    return _load_json("source-pack.json")
 
 
 @app.get("/api/runtime/table-preview/{layer}", tags=["preview"])
