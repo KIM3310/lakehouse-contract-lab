@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from app.resource_pack import (
     data_files,
+    external_data_summary,
     load_export_targets,
     load_quality_rules,
     load_source_rows,
@@ -34,3 +35,9 @@ def test_resource_pack_summary_counts_match() -> None:
 def test_all_resource_files_exist() -> None:
     for path in data_files().values():
         assert path.exists()
+
+
+def test_external_data_summary_handles_staged_files() -> None:
+    summary = external_data_summary()
+    assert "files" in summary
+    assert "olist_orders_dataset.csv" in summary["files"]
