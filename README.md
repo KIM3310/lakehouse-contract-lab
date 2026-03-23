@@ -101,15 +101,27 @@ The API will be available at `http://localhost:8096` with a healthcheck on `/hea
 
 > Local note: on machines without a working Java 17 runtime, `make build` / `make smoke` fall back to validating the checked-in proof artifacts. The Docker image still performs the full Spark + Delta rebuild.
 
+## Built-in synthetic resource pack
+
+The repo now includes explicit local resources under `data/`:
+
+- `source_orders.csv`
+- `quality_rules.json`
+- `export_targets.json`
+- `validation_cases.json`
+
+That makes the project easier to inspect, extend, and defend without any private warehouse data.
+
 ## Reviewer Fast Path
 
 Recommended first-pass review order:
 
 1. `GET /health` — verify the service contract and proof routes
-2. `GET /api/runtime/lakehouse-proof-pack` — inspect the full medallion proof bundle
-3. `GET /api/runtime/quality-report` — read the quality gates before trusting metrics
-4. `GET /api/runtime/review-summary` — compress the current run into a reviewer summary
-5. `GET /api/runtime/table-preview/gold` — inspect the governed KPI output directly
+2. `GET /api/runtime/source-pack` — inspect the built-in synthetic source rows, rules, and validation cases
+3. `GET /api/runtime/lakehouse-proof-pack` — inspect the full medallion proof bundle
+4. `GET /api/runtime/quality-report` — read the quality gates before trusting metrics
+5. `GET /api/runtime/review-summary` — compress the current run into a reviewer summary
+6. `GET /api/runtime/table-preview/gold` — inspect the governed KPI output directly
 
 ---
 
@@ -126,6 +138,7 @@ The FastAPI application serves interactive API docs automatically:
 |--------|------|-------------|
 | `GET` | `/health` | Service health with proof-pack links |
 | `GET` | `/api/runtime/lakehouse-proof-pack` | Full pipeline output bundle |
+| `GET` | `/api/runtime/source-pack` | Synthetic source/resource pack |
 | `GET` | `/api/runtime/quality-report` | Data quality gate results |
 | `GET` | `/api/runtime/review-summary` | Pipeline execution summary |
 | `GET` | `/api/runtime/table-preview/{layer}` | Layer preview (bronze/silver/gold) |
@@ -138,6 +151,9 @@ curl -s http://localhost:8096/health | python -m json.tool
 
 # Full proof pack
 curl -s http://localhost:8096/api/runtime/lakehouse-proof-pack | python -m json.tool
+
+# Source/resource pack
+curl -s http://localhost:8096/api/runtime/source-pack | python -m json.tool
 
 # Quality report
 curl -s http://localhost:8096/api/runtime/quality-report | python -m json.tool

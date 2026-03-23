@@ -1,0 +1,26 @@
+[
+  {
+    "case_id": "LHC-VAL-01",
+    "focus": "null customer handling",
+    "assertion": "Rows with missing customer_id should stay in rejected review rows.",
+    "expected_status": "pass"
+  },
+  {
+    "case_id": "LHC-VAL-02",
+    "focus": "null region handling",
+    "assertion": "Rows with missing region should not reach gold KPI outputs.",
+    "expected_status": "pass"
+  },
+  {
+    "case_id": "LHC-VAL-03",
+    "focus": "non-positive revenue",
+    "assertion": "Rows with amount <= 0 should be isolated with a review reason.",
+    "expected_status": "pass"
+  },
+  {
+    "case_id": "LHC-VAL-04",
+    "focus": "duplicate order resolution",
+    "assertion": "Only the latest duplicate order version should survive into silver.",
+    "expected_status": "pass"
+  }
+]

@@ -89,6 +89,12 @@ class TestProofPackEndpoint:
         assert "expectations" in payload["governance"]
         assert isinstance(payload["governance"]["expectations"], list)
 
+    def test_proof_pack_contains_resource_pack_summary(self) -> None:
+        """Proof pack must expose the synthetic resource pack summary."""
+        payload: dict[str, Any] = client.get("/api/runtime/lakehouse-proof-pack").json()
+        assert "resourcePack" in payload
+        assert payload["resourcePack"]["source_row_count"] == 12
+
 
 # ---------------------------------------------------------------------------
 # Quality report and review summary
@@ -117,6 +123,18 @@ class TestQualityAndReviewEndpoints:
         """Review summary must declare the correct schema version."""
         payload: dict[str, Any] = client.get("/api/runtime/review-summary").json()
         assert payload["schema"] == "lakehouse-review-summary-v1"
+
+    def test_source_pack_returns_200(self) -> None:
+        """Source pack endpoint must return HTTP 200."""
+        response = client.get("/api/runtime/source-pack")
+        assert response.status_code == 200
+
+    def test_source_pack_contains_validation_cases(self) -> None:
+        """Source pack must expose validation cases and quality rules."""
+        payload: dict[str, Any] = client.get("/api/runtime/source-pack").json()
+        assert payload["schema"] == "lakehouse-source-pack-v1"
+        assert len(payload["validationCases"]) >= 4
+        assert len(payload["qualityRules"]) >= 4
 
 
 # ---------------------------------------------------------------------------
