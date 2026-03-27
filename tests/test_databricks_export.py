@@ -13,7 +13,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.databricks_adapter import (
-    GOLD_TABLE_NAME,
     _build_create_table_sql,
     _build_merge_sql,
     _get_full_table_name,
@@ -24,7 +23,6 @@ from app.databricks_adapter import (
     is_configured,
     query_region_kpis,
 )
-
 
 # ---------------------------------------------------------------------------
 # Sample data

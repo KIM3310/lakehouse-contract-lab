@@ -22,7 +22,6 @@ from app.snowflake_adapter import (
     is_configured,
 )
 
-
 # ---------------------------------------------------------------------------
 # Sample data
 # ---------------------------------------------------------------------------
@@ -223,7 +222,10 @@ class TestSnowflakeExportFunction:
         mock_conn.cursor.return_value = mock_cursor
         mock_connector.connect.return_value = mock_conn
 
-        with patch.dict("sys.modules", {"snowflake": MagicMock(), "snowflake.connector": mock_connector}):
+        mock_snowflake = MagicMock()
+        mock_snowflake.connector = mock_connector
+
+        with patch.dict("sys.modules", {"snowflake": mock_snowflake, "snowflake.connector": mock_connector}):
             result = export_gold_kpis_to_snowflake(SAMPLE_GOLD_ROWS)
 
         assert result is True
@@ -249,7 +251,10 @@ class TestSnowflakeExportFunction:
         mock_conn.cursor.return_value = mock_cursor
         mock_connector.connect.return_value = mock_conn
 
-        with patch.dict("sys.modules", {"snowflake": MagicMock(), "snowflake.connector": mock_connector}):
+        mock_snowflake = MagicMock()
+        mock_snowflake.connector = mock_connector
+
+        with patch.dict("sys.modules", {"snowflake": mock_snowflake, "snowflake.connector": mock_connector}):
             result = export_gold_kpis_to_snowflake(SAMPLE_GOLD_ROWS)
 
         assert result is False
