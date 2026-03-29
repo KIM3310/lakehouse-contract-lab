@@ -5,11 +5,8 @@
 .PHONY: install test lint format build smoke smoke-no-build verify docker-build docker-run docker-down pipeline clean help
 
 VENV   := .venv
+BOOTSTRAP_PYTHON ?= python3.11
 VENV_PY := $(VENV)/bin/python
-PYTHON ?= python3
-ifeq ($(wildcard $(VENV_PY)), $(VENV_PY))
-PYTHON := $(VENV_PY)
-endif
 PIP    := $(VENV)/bin/pip
 PYTEST := $(VENV)/bin/pytest
 RUFF   ?= $(VENV)/bin/ruff
@@ -24,32 +21,35 @@ help: ## Show this help message
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
 install: ## Create venv and install all dependencies
-	$(PYTHON) -m venv $(VENV)
+	@if [ ! -x "$(VENV_PY)" ] || ! $(VENV_PY) -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)" >/dev/null 2>&1; then \
+		rm -rf $(VENV); \
+		$(BOOTSTRAP_PYTHON) -m venv $(VENV); \
+	fi
 	$(PIP) install --upgrade pip
 	$(PIP) install -e ".[dev]"
 
-test: ## Run the pytest suite
+test: install ## Run the pytest suite
 	$(PYTEST) -v --tb=short
 
-test-cov: ## Run tests with coverage reporting
+test-cov: install ## Run tests with coverage reporting
 	$(PYTEST) -v --tb=short --cov=app --cov=scripts --cov-report=term-missing --cov-report=html
 
-lint: ## Run ruff linter
+lint: install ## Run ruff linter
 	$(RUFF) check .
 
-format: ## Run ruff formatter
+format: install ## Run ruff formatter
 	$(RUFF) format .
 
-format-check: ## Check formatting without modifying files
+format-check: install ## Check formatting without modifying files
 	$(RUFF) format --check .
 
-build: ## Run the medallion pipeline and generate artifacts
-	$(PYTHON) scripts/build_lakehouse_artifacts.py
+build: install ## Run the medallion pipeline and generate artifacts
+	$(VENV_PY) scripts/build_lakehouse_artifacts.py
 
 smoke: build ## Boot local API and smoke key runtime surfaces
 	@$(MAKE) smoke-no-build
 
-smoke-no-build: ## Boot local API and smoke key runtime surfaces without rebuilding artifacts
+smoke-no-build: install ## Boot local API and smoke key runtime surfaces without rebuilding artifacts
 	@set -eu; \
 	PORT=8097; \
 	LOG=/tmp/lakehouse-contract-lab-smoke.log; \
@@ -68,7 +68,7 @@ smoke-no-build: ## Boot local API and smoke key runtime surfaces without rebuild
 
 verify: pipeline smoke-no-build ## Full local verification including artifact build and API smoke
 
-serve: ## Start the FastAPI development server
+serve: install ## Start the FastAPI development server
 	$(UVICORN) app.main:app --host 127.0.0.1 --port $(APP_PORT) --reload
 
 docker-build: ## Build the Docker image

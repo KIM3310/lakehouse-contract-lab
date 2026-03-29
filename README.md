@@ -7,6 +7,20 @@
 
 Production-grade **Spark + Delta Lake** medallion pipeline with explicit contract boundaries, data quality gates, and multi-cloud export. Demonstrates end-to-end data engineering from raw ingestion through governed KPI output to Snowflake and Databricks Unity Catalog.
 
+## Hiring Fit And Proof Boundary
+
+- **Best fit roles:** data platform engineer, analytics / lakehouse engineer, solution architect
+- **Strongest public proof:** real Spark + Delta medallion flow, explicit contract gates, layer previews, and reviewable API surfaces
+- **What is real here:** the Spark pipeline, Delta outputs, quality rules, API layer, and export adapters
+- **What is bounded here:** source orders are synthetic, and Snowflake / Databricks / S3 delivery activates only when environment credentials are present
+
+## Latest Verified Snapshot
+
+- **Verified on:** 2026-03-28
+- **Command:** `make verify`
+- **Outcome:** passed locally; 81 tests, artifact build validation, and API smoke all completed
+- **Notes:** on machines without a working Java runtime, the build path now validates the checked-in prebuilt artifacts instead of failing the review flow
+
 ## Architecture
 
 ```
