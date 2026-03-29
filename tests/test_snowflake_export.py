@@ -221,7 +221,6 @@ class TestSnowflakeExportFunction:
         mock_cursor = MagicMock()
         mock_conn.cursor.return_value = mock_cursor
         mock_connector.connect.return_value = mock_conn
-
         mock_snowflake = MagicMock()
         mock_snowflake.connector = mock_connector
 
@@ -250,7 +249,6 @@ class TestSnowflakeExportFunction:
         mock_cursor = MagicMock()
         mock_conn.cursor.return_value = mock_cursor
         mock_connector.connect.return_value = mock_conn
-
         mock_snowflake = MagicMock()
         mock_snowflake.connector = mock_connector
 
