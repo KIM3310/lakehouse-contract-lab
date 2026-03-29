@@ -99,11 +99,10 @@ Note: on machines without Java 17, `make build` validates checked-in proof artif
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/health` | Service health with proof-pack links |
-| `GET` | `/api/runtime/lakehouse-proof-pack` | Full medallion pipeline output bundle |
 | `GET` | `/api/runtime/quality-report` | Data quality gate results |
 | `GET` | `/api/runtime/table-preview/{layer}` | Layer preview: `bronze` / `silver` / `gold` |
-| `GET` | `/api/runtime/source-pack` | Synthetic source rows, rules, validation cases |
-| `GET` | `/api/runtime/review-summary` | Pipeline execution summary |
+
+Additional artifacts (`lakehouse-proof-pack.json`, `source-pack.json`, `review-summary.json`) are generated in the `artifacts/` directory during pipeline builds and can be reviewed locally or exported to cloud storage.
 
 ## Deployment
 
