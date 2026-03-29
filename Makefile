@@ -5,7 +5,7 @@
 .PHONY: install test lint format build smoke smoke-no-build verify docker-build docker-run docker-down pipeline clean help
 
 VENV   := .venv
-BOOTSTRAP_PYTHON ?= python3.11
+BOOTSTRAP_PYTHON ?= python3
 VENV_PY := $(VENV)/bin/python
 PIP    := $(VENV)/bin/pip
 PYTEST := $(VENV)/bin/pytest
