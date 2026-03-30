@@ -154,3 +154,50 @@ def table_preview(layer: str) -> dict[str, Any]:
         raise HTTPException(status_code=404, detail="Unknown layer")
     logger.info("Serving table-preview for layer=%s", layer)
     return _load_json(filename)
+
+
+@app.get("/api/runtime/export-status", tags=["pipeline"])
+def export_status() -> dict[str, Any]:
+    """Return cloud export adapter readiness status."""
+    from app.snowflake_adapter import SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER
+    from app.databricks_adapter import DATABRICKS_HOST
+
+    return {
+        "schema": "lakehouse-export-status-v1",
+        "snowflake": {
+            "configured": bool(SNOWFLAKE_ACCOUNT and SNOWFLAKE_USER),
+            "account": SNOWFLAKE_ACCOUNT or "(not set)",
+        },
+        "databricks": {
+            "configured": bool(DATABRICKS_HOST),
+            "host": DATABRICKS_HOST or "(not set)",
+        },
+        "s3": {
+            "configured": bool(os.getenv("S3_ARTIFACT_BUCKET")),
+            "bucket": os.getenv("S3_ARTIFACT_BUCKET") or "(not set)",
+        },
+    }
+
+
+@app.get("/api/runtime/pipeline-summary", tags=["pipeline"])
+def pipeline_summary() -> dict[str, Any]:
+    """Return combined pipeline summary — row counts, quality, and gold KPIs in one call."""
+    quality = _load_json("quality-report.json")
+    bronze = _load_json("bronze-preview.json")
+    silver = _load_json("silver-preview.json")
+    gold = _load_json("gold-preview.json")
+
+    return {
+        "schema": "lakehouse-pipeline-summary-v1",
+        "layers": {
+            "bronze": {"rows": len(bronze.get("rows", []))},
+            "silver": {"rows": len(silver.get("rows", []))},
+            "gold": {"rows": len(gold.get("rows", []))},
+        },
+        "quality": {
+            "total_expectations": len(quality.get("expectations", [])),
+            "passed": sum(1 for e in quality.get("expectations", []) if e.get("passed")),
+            "rejected_rows": len(quality.get("rejectedPreview", [])),
+        },
+        "gold_kpis": gold.get("rows", []),
+    }
