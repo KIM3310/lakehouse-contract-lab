@@ -60,6 +60,13 @@ jobs:
           path: coverage.xml
           retention-days: 30
 
+      - name: Upload coverage
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+
   docker-build:
     runs-on: ubuntu-latest
     needs: lint-and-test
