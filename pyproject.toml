@@ -49,3 +49,6 @@ ignore = ["E501", "E402"]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-v --tb=short"
+
+[project.urls]
+Repository = "https://github.com/KIM3310/lakehouse-contract-lab"
