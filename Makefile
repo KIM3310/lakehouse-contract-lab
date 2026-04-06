@@ -8,9 +8,6 @@ VENV   := .venv
 BOOTSTRAP_PYTHON ?= python3
 VENV_PY := $(VENV)/bin/python
 PIP    := $(VENV)/bin/pip
-PYTEST := $(VENV)/bin/pytest
-RUFF   ?= $(VENV)/bin/ruff
-UVICORN ?= $(VENV)/bin/uvicorn
 
 APP_PORT ?= 8096
 IMAGE_NAME ?= lakehouse-contract-lab
@@ -25,23 +22,26 @@ install: ## Create venv and install all dependencies
 		rm -rf $(VENV); \
 		$(BOOTSTRAP_PYTHON) -m venv $(VENV); \
 	fi
-	$(PIP) install --upgrade pip
-	$(PIP) install -e ".[dev]"
+	@if ! $(VENV_PY) -m pip --version >/dev/null 2>&1; then \
+		$(VENV_PY) -m ensurepip --upgrade; \
+	fi
+	$(VENV_PY) -m pip install --upgrade pip
+	$(VENV_PY) -m pip install -e ".[dev]"
 
 test: install ## Run the pytest suite
-	$(PYTEST) -v --tb=short
+	$(VENV_PY) -m pytest -v --tb=short
 
 test-cov: install ## Run tests with coverage reporting
-	$(PYTEST) -v --tb=short --cov=app --cov=scripts --cov-report=term-missing --cov-report=html
+	$(VENV_PY) -m pytest -v --tb=short --cov=app --cov=scripts --cov-report=term-missing --cov-report=html
 
 lint: install ## Run ruff linter
-	$(RUFF) check .
+	$(VENV_PY) -m ruff check .
 
 format: install ## Run ruff formatter
-	$(RUFF) format .
+	$(VENV_PY) -m ruff format .
 
 format-check: install ## Check formatting without modifying files
-	$(RUFF) format --check .
+	$(VENV_PY) -m ruff format --check .
 
 build: install ## Run the medallion pipeline and generate artifacts
 	$(VENV_PY) scripts/build_lakehouse_artifacts.py
@@ -53,7 +53,7 @@ smoke-no-build: install ## Boot local API and smoke key runtime surfaces without
 	@set -eu; \
 	PORT=8097; \
 	LOG=/tmp/lakehouse-contract-lab-smoke.log; \
-	$(UVICORN) app.main:app --host 127.0.0.1 --port $$PORT >$$LOG 2>&1 & \
+	$(VENV_PY) -m uvicorn app.main:app --host 127.0.0.1 --port $$PORT >$$LOG 2>&1 & \
 	pid=$$!; \
 	trap 'kill $$pid >/dev/null 2>&1 || true' EXIT INT TERM; \
 	for _ in 1 2 3 4 5 6 7 8 9 10; do \
@@ -69,7 +69,7 @@ smoke-no-build: install ## Boot local API and smoke key runtime surfaces without
 verify: pipeline smoke-no-build ## Full local verification including artifact build and API smoke
 
 serve: install ## Start the FastAPI development server
-	$(UVICORN) app.main:app --host 127.0.0.1 --port $(APP_PORT) --reload
+	$(VENV_PY) -m uvicorn app.main:app --host 127.0.0.1 --port $(APP_PORT) --reload
 
 docker-build: ## Build the Docker image
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
