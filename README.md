@@ -8,6 +8,20 @@
 
 **Spark + Delta Lake** medallion pipeline with quality gates and multi-cloud export. Ingests raw orders, validates through bronze/silver/gold layers, and pushes KPIs to Snowflake and Databricks Unity Catalog.
 
+## Hiring Fit And Proof Boundary
+
+- **Best fit roles:** data engineer, analytics engineer, platform engineer, solution architect
+- **Strongest public proof:** medallion pipeline structure, quality gates, export adapters, and reviewer-readable proof-pack APIs
+- **What is real here:** Spark transforms, rejection logic, KPI rollups, Snowflake MERGE export logic, Databricks export bridges, and local review surfaces
+- **What is bounded here:** live Snowflake and Databricks exports only activate when credentials are configured, and the seeded business dataset is synthetic
+
+## Latest Verified Snapshot
+
+- **Verified on:** 2026-04-07
+- **Command:** `make verify`
+- **Outcome:** passed locally; self-healing Python 3.11 bootstrap, 81 tests, lint, prebuilt artifact validation, and smoke checks completed successfully
+- **Notes:** Snowflake export tests and Snowflake export bridge tests were rerun successfully in the repo venv, while fresh Spark assembly remains gated by local Java availability
+
 ## Architecture
 
 ```
