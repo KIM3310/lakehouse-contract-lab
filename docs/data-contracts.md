@@ -14,7 +14,7 @@ Contracts are defined in two places:
 
 2. **`scripts/build_lakehouse_artifacts.py`** -- executable implementation of each rule as a PySpark `WHEN` expression chain.
 
-The declarative definitions serve as documentation and are bundled into the proof pack artifact. The executable implementation is the source of truth for enforcement.
+The declarative definitions serve as documentation and are bundled into the pipeline summary artifact. The executable implementation is the source of truth for enforcement.
 
 ### Bronze Layer Contract
 

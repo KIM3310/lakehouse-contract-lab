@@ -1,6 +1,6 @@
 # Contributing to Lakehouse Contract Lab
 
-Thank you for your interest in contributing. This guide covers the development setup and conventions used in this project.
+Dev setup and conventions.
 
 ## Prerequisites
 

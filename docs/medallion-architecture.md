@@ -92,7 +92,7 @@ Rules are evaluated in priority order. The first matching rule determines the `r
 
 The only quality gate boundary in this pipeline is between bronze and silver. The silver-to-gold transition is a pure aggregation with no additional filtering. This is intentional: once data passes the quality gates, it is trusted for all downstream computation.
 
-**Gate results** are captured as expectation objects with `passed` and `failed` counts, stored in both the proof pack and quality report artifacts.
+**Gate results** are captured as expectation objects with `passed` and `failed` counts, stored in both the pipeline summary and quality report artifacts.
 
 **Metrics tracked:**
 - Per-gate pass/fail counts
@@ -105,5 +105,5 @@ The only quality gate boundary in this pipeline is between bronze and silver. Th
 All three layers are written as Delta Lake tables, providing:
 - **ACID transactions** -- each layer write is atomic.
 - **Schema enforcement** -- column types are locked on first write.
-- **Version tracking** -- the pipeline reads `_delta_log/*.json` to report the latest commit version for each table in the proof pack artifact.
+- **Version tracking** -- the pipeline reads `_delta_log/*.json` to report the latest commit version for each table in the pipeline summary artifact.
 - **Time travel capability** -- previous versions of each table are accessible through the Delta log.

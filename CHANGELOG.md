@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FastAPI service exposing `/health`, `/api/runtime/quality-report`, `/api/runtime/table-preview/{layer}`, and `/api/runtime/lakehouse-proof-pack`.
 - SVG architecture board generation (`docs/lakehouse-contract-board.svg`).
 - Synthetic 12-row order dataset with intentional quality violations for gate testing.
-- JSON artifact generation: proof pack, quality report, review summary, source pack, layer previews.
+- JSON artifact generation: pipeline summary, quality report, review summary, source pack, layer previews.
 - Docker and Docker Compose support for containerized execution.
 - Terraform configuration for GCP Cloud Run deployment (`infra/terraform/`).
 - CI pipeline with GitHub Actions: lint, test, build, smoke test, Docker build.

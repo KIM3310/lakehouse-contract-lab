@@ -1,8 +1,4 @@
-"""FastAPI application exposing lakehouse proof-pack artifacts and contract surfaces.
-
-Endpoints serve pre-built JSON artifacts from the medallion pipeline,
-including the pipeline output, quality report, review summary, and layer previews.
-"""
+"""FastAPI app serving medallion pipeline artifacts."""
 
 from __future__ import annotations
 
@@ -44,7 +40,7 @@ app = FastAPI(
         },
         {
             "name": "pipeline",
-            "description": "Pipeline artifact endpoints (proof pack, quality report, review summary).",
+            "description": "Pipeline artifact endpoints (pipeline summary, quality report, review summary).",
         },
         {
             "name": "resources",
@@ -70,11 +66,6 @@ LAYER_ARTIFACT_MAP: dict[str, str] = {
 
 
 def _openai_refresh_contract() -> dict[str, Any]:
-    """Return the OpenAI refresh contract configuration.
-
-    Describes deployment mode, budget caps, and moderation settings
-    for the optional OpenAI-powered artifact refresh feature.
-    """
     api_key: str = (os.getenv("OPENAI_API_KEY") or "").strip()
     return {
         "deploymentMode": "artifact-refresh-only",
@@ -89,17 +80,6 @@ def _openai_refresh_contract() -> dict[str, Any]:
 
 
 def _load_json(filename: str) -> dict[str, Any]:
-    """Load and parse a JSON artifact file from the artifacts directory.
-
-    Args:
-        filename: Name of the JSON file to load (e.g. ``"lakehouse-proof-pack.json"``).
-
-    Returns:
-        Parsed JSON content as a dictionary.
-
-    Raises:
-        HTTPException: If the artifact file does not exist (HTTP 503).
-    """
     path: Path = ARTIFACTS_DIR / filename
     if not path.exists():
         logger.error("Artifact missing: %s (looked at %s)", filename, path)
@@ -113,7 +93,6 @@ def _load_json(filename: str) -> dict[str, Any]:
 
 @app.get("/health", tags=["health"])
 def health() -> dict[str, Any]:
-    """Return service health status with links to all proof-pack endpoints."""
     logger.info("Health check requested")
     return {
         "ok": True,
@@ -133,21 +112,12 @@ def health() -> dict[str, Any]:
 
 @app.get("/api/runtime/quality-report", tags=["pipeline"])
 def quality_report() -> dict[str, Any]:
-    """Return the quality report with expectation results and rejected row previews."""
     logger.info("Serving quality-report")
     return _load_json("quality-report.json")
 
 
 @app.get("/api/runtime/table-preview/{layer}", tags=["preview"])
 def table_preview(layer: str) -> dict[str, Any]:
-    """Return a preview of rows from the specified medallion layer.
-
-    Args:
-        layer: One of ``bronze``, ``silver``, or ``gold``.
-
-    Raises:
-        HTTPException: If the layer name is not recognized (HTTP 404).
-    """
     filename: str | None = LAYER_ARTIFACT_MAP.get(layer.lower())
     if filename is None:
         logger.warning("Unknown layer requested: %s", layer)
@@ -158,7 +128,6 @@ def table_preview(layer: str) -> dict[str, Any]:
 
 @app.get("/api/runtime/export-status", tags=["pipeline"])
 def export_status() -> dict[str, Any]:
-    """Return cloud export adapter readiness status."""
     from app.snowflake_adapter import SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER
     from app.databricks_adapter import DATABRICKS_HOST
 
@@ -181,7 +150,6 @@ def export_status() -> dict[str, Any]:
 
 @app.get("/api/runtime/pipeline-summary", tags=["pipeline"])
 def pipeline_summary() -> dict[str, Any]:
-    """Return combined pipeline summary — row counts, quality, and gold KPIs in one call."""
     quality = _load_json("quality-report.json")
     bronze = _load_json("bronze-preview.json")
     silver = _load_json("silver-preview.json")

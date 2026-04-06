@@ -1,1 +1,1 @@
-"""Lakehouse Contract Lab - FastAPI application package."""
+"""lakehouse-contract-lab app package."""

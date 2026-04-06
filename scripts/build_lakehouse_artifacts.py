@@ -1,9 +1,4 @@
-"""Build lakehouse medallion pipeline artifacts using Spark and Delta Lake.
-
-Executes the full bronze -> silver -> gold medallion pipeline on sample order
-data, applies quality gates, writes Delta tables, and generates JSON artifacts
-plus an SVG architecture board for reviewer consumption.
-"""
+"""Runs the bronze -> silver -> gold pipeline. Writes Delta tables + JSON artifacts."""
 
 from __future__ import annotations
 
@@ -53,10 +48,6 @@ SOURCE_ROWS: list[dict[str, Any]] = load_source_rows()
 
 
 def ensure_java_home() -> None:
-    """Detect and set JAVA_HOME if not already configured.
-
-    Also sets ``SPARK_LOCAL_IP`` to ``127.0.0.1`` for local Spark execution.
-    """
     if os.environ.get("JAVA_HOME"):
         logger.debug("JAVA_HOME already set: %s", os.environ["JAVA_HOME"])
         os.environ.setdefault("SPARK_LOCAL_IP", "127.0.0.1")
@@ -69,7 +60,6 @@ def ensure_java_home() -> None:
 
 
 def java_runtime_available() -> bool:
-    """Return True when a usable local Java runtime is available."""
     ensure_java_home()
     java_cmd = shutil.which("java")
     if not java_cmd:
@@ -88,7 +78,6 @@ def java_runtime_available() -> bool:
 
 
 def validate_prebuilt_artifacts() -> None:
-    """Validate the checked-in artifact set for no-Java local environments."""
     required_paths = [
         ARTIFACTS_DIR / "lakehouse-proof-pack.json",
         ARTIFACTS_DIR / "quality-report.json",
@@ -109,11 +98,6 @@ def validate_prebuilt_artifacts() -> None:
 
 
 def build_spark() -> SparkSession:
-    """Create and return a local Spark session configured for Delta Lake.
-
-    Returns:
-        A ``SparkSession`` with Delta Lake extensions enabled.
-    """
     ensure_java_home()
     logger.info("Building Spark session with Delta Lake support")
     builder = (
@@ -132,17 +116,7 @@ def build_spark() -> SparkSession:
 
 
 def normalize_value(value: Any) -> Any:
-    """Normalize a value for JSON serialization.
-
-    Converts ``datetime`` instances to ISO-8601 strings and ``Decimal``
-    instances to plain ``float`` values.  All other types pass through.
-
-    Args:
-        value: The value to normalize.
-
-    Returns:
-        A JSON-serializable representation of *value*.
-    """
+    """Convert datetime/Decimal to JSON-friendly types."""
     if isinstance(value, datetime):
         return value.isoformat()
     if isinstance(value, Decimal):
@@ -155,42 +129,17 @@ def rows_to_json(
     order_by: list[str],
     limit: int = 5,
 ) -> list[dict[str, Any]]:
-    """Collect Spark DataFrame rows as a list of JSON-serializable dicts.
-
-    Args:
-        df: Source DataFrame.
-        order_by: Column names to sort by before collecting.
-        limit: Maximum number of rows to return.
-
-    Returns:
-        A list of dictionaries with normalized values.
-    """
     rows = df.orderBy(*order_by).limit(limit).collect() if order_by else df.limit(limit).collect()
     return [{key: normalize_value(value) for key, value in row.asDict().items()} for row in rows]
 
 
 def latest_delta_version(table_path: Path) -> int | None:
-    """Return the latest Delta log version number for a table, or ``None``.
-
-    Args:
-        table_path: Root path of the Delta table.
-
-    Returns:
-        The highest commit version found in ``_delta_log/``, or ``None`` if
-        no log entries exist.
-    """
     log_dir: Path = table_path / "_delta_log"
     versions: list[int] = [int(path.stem) for path in log_dir.glob("*.json") if path.stem.isdigit()]
     return max(versions) if versions else None
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
-    """Write a dictionary to a JSON file, creating parent directories as needed.
-
-    Args:
-        path: Destination file path.
-        payload: Data to serialize.
-    """
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     logger.info("Wrote artifact: %s", path.name)
@@ -200,20 +149,7 @@ def build_review_summary_artifact(
     proof_pack: dict[str, Any],
     quality_report: dict[str, Any],
 ) -> dict[str, Any]:
-    """Build the review-summary artifact, optionally using OpenAI for enrichment.
-
-    When an ``OPENAI_API_KEY`` environment variable is present, the summary
-    is generated via the OpenAI chat completions API.  Otherwise a static
-    fallback is returned.
-
-    Args:
-        proof_pack: The lakehouse proof-pack dictionary.
-        quality_report: The quality report dictionary.
-
-    Returns:
-        A review-summary artifact dictionary conforming to
-        ``lakehouse-review-summary-v1``.
-    """
+    """Build review-summary. Uses OpenAI if OPENAI_API_KEY is set, otherwise static fallback."""
     fallback: dict[str, Any] = {
         "schema": "lakehouse-review-summary-v1",
         "service": proof_pack["service"],
@@ -331,14 +267,6 @@ def build_review_summary_artifact(
 
 
 def build_svg(proof_pack: dict[str, Any]) -> None:
-    """Generate an SVG architecture board from the proof-pack summary.
-
-    Writes ``docs/lakehouse-contract-board.svg`` illustrating the three
-    medallion layers, row counts, and quality gate results.
-
-    Args:
-        proof_pack: The lakehouse proof-pack dictionary.
-    """
     logger.info("Generating SVG architecture board")
     summary: dict[str, Any] = proof_pack["summary"]
     expectations: list[dict[str, Any]] = proof_pack["governance"]["expectations"]
@@ -388,16 +316,6 @@ def build_svg(proof_pack: dict[str, Any]) -> None:
 
 
 def main() -> None:
-    """Execute the full medallion pipeline and generate all artifacts.
-
-    Steps:
-        1. Build a local Spark session with Delta support.
-        2. Ingest source rows into the bronze layer.
-        3. Apply quality gates and deduplication to produce silver.
-        4. Aggregate silver into gold-level region KPIs.
-        5. Write Delta tables and JSON artifact files.
-        6. Generate the SVG architecture board.
-    """
     logger.info("Starting lakehouse artifact build")
     if not java_runtime_available():
         validate_prebuilt_artifacts()

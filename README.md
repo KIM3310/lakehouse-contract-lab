@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
-Production-grade **Spark + Delta Lake** medallion pipeline with explicit contract boundaries, data quality gates, and multi-cloud export. Demonstrates end-to-end data engineering from raw ingestion through governed KPI output to Snowflake and Databricks Unity Catalog.
+**Spark + Delta Lake** medallion pipeline with quality gates and multi-cloud export. Ingests raw orders, validates through bronze/silver/gold layers, and pushes KPIs to Snowflake and Databricks Unity Catalog.
 
 ## Architecture
 
@@ -31,9 +31,9 @@ Raw orders (CSV)
 | `amount` must be > 0 | `non_positive_amount` |
 | Dedup by `order_id`, keep newest | `stale_duplicate` |
 
-Quality rules are defined in `data/quality_rules.json` and applied as chained Spark expressions. Rows failing any gate are partitioned into a rejected DataFrame persisted alongside the silver layer. Only rows passing all gates graduate to silver. Rejected rows retain their full bronze envelope plus a `rejection_reason` label and are surfaced via `/api/runtime/quality-report`.
+Rules live in `data/quality_rules.json` and get applied as chained Spark `WHEN` expressions. Failed rows land in a rejected DataFrame with a `rejection_reason` label, surfaced at `/api/runtime/quality-report`.
 
-The gold layer aggregates accepted silver rows by region into KPI columns (`gross_revenue_usd`, `accepted_orders`, `completed_orders`, `pipeline_orders`, `distinct_customers`). No rejected row can influence gold-layer KPIs.
+Gold aggregates accepted silver rows by region into KPI columns (`gross_revenue_usd`, `accepted_orders`, `completed_orders`, `pipeline_orders`, `distinct_customers`).
 
 ## Quick Start
 
@@ -51,7 +51,7 @@ Docker:
 cp .env.example .env && docker compose up --build
 ```
 
-On machines without Java 17, `make build` validates checked-in proof artifacts. The Docker image runs the full Spark + Delta rebuild.
+No Java? `make build` validates the checked-in artifacts instead. Docker runs the full Spark + Delta rebuild.
 
 ## Core API
 
@@ -71,7 +71,7 @@ On machines without Java 17, `make build` validates checked-in proof artifacts. 
 
 **GCP Cloud Run** — Terraform config in `infra/terraform/`.
 
-All cloud integrations are env-var gated — the pipeline runs fully locally without any cloud dependency.
+All cloud integrations are env-var gated -- runs fully locally without any cloud creds.
 
 ## Related Projects
 

@@ -1,14 +1,4 @@
-"""Databricks connector for exporting gold-layer KPIs to Unity Catalog.
-
-This module is env-var gated and supports either:
-- Databricks CLI / unified-auth profiles (`DATABRICKS_CONFIG_PROFILE`), or
-- direct token auth (`DATABRICKS_TOKEN`).
-
-Typical usage from the pipeline entry-point::
-
-    from app.databricks_adapter import export_gold_kpis_to_databricks
-    export_gold_kpis_to_databricks(gold_rows)
-"""
+"""Databricks Unity Catalog export adapter. Env-var gated -- no-op when DATABRICKS_HOST is unset."""
 
 from __future__ import annotations
 

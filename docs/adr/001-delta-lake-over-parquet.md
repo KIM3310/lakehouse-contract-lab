@@ -15,7 +15,7 @@ The Lakehouse Contract Lab pipeline writes medallion-layer tables (bronze, silve
 1. **Plain Apache Parquet** -- the de facto columnar format for analytical workloads.
 2. **Delta Lake** -- an open table format built on Parquet that adds a transaction log layer.
 
-The pipeline is designed as a portfolio project targeting Data Platform roles at Snowflake and Databricks, where Delta Lake is a core technology. However, the technical merits justified the choice independently.
+Delta Lake is a core technology in the Snowflake and Databricks ecosystems we're targeting for export, but the technical merits stand on their own.
 
 ## Decision
 
@@ -34,7 +34,7 @@ Delta Lake retains previous versions of each table through its commit log. This 
 - Debugging quality gate regressions by comparing silver snapshots across runs.
 - Reproducing gold KPI values at a specific point in time.
 
-The pipeline tracks and reports the latest Delta version for each table in the proof pack artifact, making version history a first-class part of the pipeline's contract surface.
+The pipeline tracks and reports the latest Delta version for each table in the pipeline summary artifact, making version history a first-class part of the pipeline's contract surface.
 
 ### MERGE Support
 

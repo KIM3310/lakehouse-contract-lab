@@ -1,4 +1,4 @@
-"""Tests for the synthetic source/resource pack."""
+"""Resource pack loader tests."""
 
 from __future__ import annotations
 

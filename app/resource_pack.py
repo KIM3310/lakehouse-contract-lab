@@ -1,4 +1,4 @@
-"""Pure-Python loaders for the built-in synthetic resource pack."""
+"""Loaders for source data, quality rules, and export target configs."""
 
 from __future__ import annotations
 

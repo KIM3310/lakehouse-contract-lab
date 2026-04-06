@@ -1,23 +1,4 @@
-"""Snowflake connector for exporting gold-layer KPIs.
-
-This module is **env-var gated**: it only activates when ``SNOWFLAKE_ACCOUNT``
-is present in the environment.  When the variable is absent, all public
-functions return gracefully without side effects, so the rest of the pipeline
-is never blocked by a missing Snowflake configuration.
-
-Typical usage from the pipeline entry-point::
-
-    from app.snowflake_adapter import export_gold_kpis_to_snowflake
-    export_gold_kpis_to_snowflake(gold_rows)
-
-Required environment variables (all must be set for the connector to activate):
-    SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PASSWORD,
-    SNOWFLAKE_WAREHOUSE, SNOWFLAKE_DATABASE
-
-Optional:
-    SNOWFLAKE_SCHEMA  (default ``GOLD``)
-    SNOWFLAKE_ROLE    (default ``SYSADMIN``)
-"""
+"""Snowflake export adapter. Env-var gated -- no-op when SNOWFLAKE_ACCOUNT is unset."""
 
 from __future__ import annotations
 
@@ -27,9 +8,6 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
 
 SNOWFLAKE_ACCOUNT: str = os.getenv("SNOWFLAKE_ACCOUNT", "")
 SNOWFLAKE_USER: str = os.getenv("SNOWFLAKE_USER", "")
@@ -43,12 +21,10 @@ GOLD_TABLE_NAME: str = "REGION_KPIS"
 
 
 def is_configured() -> bool:
-    """Return True when all required Snowflake env vars are present."""
     return all([SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PASSWORD])
 
 
 def _get_connection_params() -> dict[str, str]:
-    """Build the Snowflake connection parameter dictionary."""
     return {
         "account": SNOWFLAKE_ACCOUNT,
         "user": SNOWFLAKE_USER,
@@ -61,11 +37,6 @@ def _get_connection_params() -> dict[str, str]:
 
 
 def _ensure_schema(cursor: Any) -> None:
-    """Create the target database and schema if they do not exist.
-
-    Args:
-        cursor: An active Snowflake cursor object.
-    """
     cursor.execute(f"CREATE DATABASE IF NOT EXISTS {SNOWFLAKE_DATABASE}")
     cursor.execute(f"USE DATABASE {SNOWFLAKE_DATABASE}")
     cursor.execute(f"CREATE SCHEMA IF NOT EXISTS {SNOWFLAKE_SCHEMA}")
@@ -78,11 +49,6 @@ def _ensure_schema(cursor: Any) -> None:
 
 
 def _create_gold_table(cursor: Any) -> None:
-    """Create the gold KPI table if it does not exist.
-
-    Args:
-        cursor: An active Snowflake cursor object.
-    """
     ddl = f"""
     CREATE TABLE IF NOT EXISTS {GOLD_TABLE_NAME} (
         region              VARCHAR(64)   NOT NULL,
@@ -99,20 +65,10 @@ def _create_gold_table(cursor: Any) -> None:
 
 
 def _upsert_rows(cursor: Any, rows: list[dict[str, Any]]) -> int:
-    """Merge gold KPI rows into the Snowflake table using MERGE.
-
-    Args:
-        cursor: An active Snowflake cursor object.
-        rows: List of gold KPI row dicts with keys matching the table columns.
-
-    Returns:
-        Number of rows upserted.
-    """
     if not rows:
         logger.warning("No gold KPI rows to export")
         return 0
 
-    # Use parameterized placeholders to prevent SQL injection
     placeholders = ", ".join(["(%s, %s, %s, %s, %s, %s)"] * len(rows))
     params: list[object] = []
     for row in rows:
@@ -162,20 +118,7 @@ def _upsert_rows(cursor: Any, rows: list[dict[str, Any]]) -> int:
 
 
 def export_gold_kpis_to_snowflake(rows: list[dict[str, Any]]) -> bool:
-    """Export gold-layer KPI rows to Snowflake.
-
-    This is the main public entry point. When Snowflake is not configured
-    (``SNOWFLAKE_ACCOUNT`` is absent), the function logs a skip message and
-    returns ``False`` without raising.
-
-    Args:
-        rows: Gold KPI rows as a list of dicts. Each dict should contain:
-              ``region``, ``gross_revenue_usd``, ``accepted_orders``,
-              ``completed_orders``, ``pipeline_orders``, ``distinct_customers``.
-
-    Returns:
-        ``True`` if rows were successfully written, ``False`` otherwise.
-    """
+    """Write gold KPI rows to Snowflake via MERGE. Returns True on success."""
     if not is_configured():
         logger.info(
             "Snowflake export skipped: SNOWFLAKE_ACCOUNT not set. "
