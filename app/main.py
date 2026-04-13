@@ -128,8 +128,8 @@ def table_preview(layer: str) -> dict[str, Any]:
 
 @app.get("/api/runtime/export-status", tags=["pipeline"])
 def export_status() -> dict[str, Any]:
-    from app.snowflake_adapter import SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER
     from app.databricks_adapter import DATABRICKS_HOST
+    from app.snowflake_adapter import SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER
 
     return {
         "schema": "lakehouse-export-status-v1",
