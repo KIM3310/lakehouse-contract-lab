@@ -155,6 +155,12 @@ Gold aggregates accepted silver rows by region into KPI columns: `gross_revenue_
 
 ---
 
+## Consolidated Operating Pattern
+
+[Data platform operating patterns](docs/data-platform-operating-patterns.md) folds demo-pack and rollout-playbook material into the canonical contract-first path used by this repository.
+
+---
+
 ## Core API
 
 | Method | Path | Description |
@@ -201,6 +207,7 @@ lakehouse-contract-lab/
 |-- tests/                       # 81+ pytest tests (adapters, API, pipeline, resource pack)
 |-- docs/
 |   |-- adr/                     # Architecture Decision Records
+|   |-- data-platform-operating-patterns.md # Consolidated rollout and demo patterns
 |   |-- data-contracts.md        # Contract-first approach documentation
 |   |-- medallion-architecture.md # Layer-by-layer architecture guide
 |-- infra/terraform/             # GCP Cloud Run deployment
