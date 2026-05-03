@@ -61,11 +61,11 @@ flowchart LR
 
 ---
 
-## Hiring Fit and Proof Boundary
+## Technical Proof Boundary
 
 | Dimension | Details |
 |-----------|---------|
-| **Best fit roles** | Data Engineer, Analytics Engineer, Platform Engineer, Solutions Architect |
+| **Primary architecture lane** | Data contracts, analytics platform operations, and lakehouse export reliability |
 | **Strongest proof** | Medallion pipeline structure, quality gates, export adapters, reviewer-readable proof-pack APIs |
 | **What is real** | Spark transforms, rejection logic, KPI rollups, Snowflake MERGE export logic, Databricks export bridges, local review surfaces |
 | **What is bounded** | Live Snowflake and Databricks exports only activate when credentials are configured; the seeded business dataset is synthetic |
