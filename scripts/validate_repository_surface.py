@@ -138,10 +138,7 @@ def is_external_or_route(target: str) -> bool:
     return (
         lowered.startswith(("http://", "https://", "mailto:", "tel:"))
         or target.startswith("#")
-        or (
-            target.startswith("/")
-            and not any(target.startswith(marker) for marker in LOCAL_PATH_MARKERS)
-        )
+        or (target.startswith("/") and not any(target.startswith(marker) for marker in LOCAL_PATH_MARKERS))
     )
 
 
