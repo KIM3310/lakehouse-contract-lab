@@ -3,7 +3,7 @@
 # Python 3.11 + Java 17 (for Spark/Delta) on slim Debian
 # =============================================================================
 
-FROM python:3.11-slim-bookworm AS base
+FROM python:3.14-slim-bookworm AS base
 
 LABEL maintainer="Lakehouse Contract Lab"
 LABEL description="Spark + Delta medallion pipeline with quality gates and FastAPI"
