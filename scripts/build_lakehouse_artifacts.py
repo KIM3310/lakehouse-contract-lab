@@ -317,6 +317,10 @@ def build_svg(proof_pack: dict[str, Any]) -> None:
 
 def main() -> None:
     logger.info("Starting lakehouse artifact build")
+    if os.getenv("LAKEHOUSE_VALIDATE_PREBUILT_ONLY", "").strip() == "1" or os.getenv("CI", "").lower() == "true":
+        validate_prebuilt_artifacts()
+        return
+
     if not java_runtime_available():
         validate_prebuilt_artifacts()
         return
