@@ -22,6 +22,13 @@ A contract-first data lab that turns data quality from a slide into a repeatable
 | Safety boundary | Fixture data proves behavior; production use needs source-system contracts, ownership, lineage, and access policy. |
 | Fast proof | Run the pytest/ruff pipeline and inspect generated quality reports and contract outputs. |
 
+## Reviewer Fast Path
+
+- **First minute:** Inspect the contract checks, quality reports, and medallion layer artifacts before deployment notes.
+- **Local demo:** Run `make smoke-no-build` for API review, then open `http://127.0.0.1:8096/docs`.
+- **Verification:** Run `make verify`; CI uses prebuilt artifact validation when a Spark/Java runtime is unavailable.
+- **Commercial read:** Position it as a data-contract starter for governed lakehouse and warehouse teams.
+
 ## Architecture
 
 ```mermaid
