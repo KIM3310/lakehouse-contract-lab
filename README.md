@@ -10,6 +10,18 @@ A production-grade **Spark + Delta Lake** medallion pipeline that enforces data 
 
 ---
 
+## Product and Review Surface
+
+A contract-first data lab that turns data quality from a slide into a repeatable pipeline and review artifact.
+
+| Lens | Definition |
+|---|---|
+| Buyer or user | Data platform teams, BI teams, analytics engineers, and migration leaders. |
+| Commercial route | Sell data-contract starter packs, quality-gate setup, rejected-row review workflows, and warehouse migration readiness reviews. |
+| Review signal | Spark/Delta-style medallion pipeline, quality gates, warehouse export, contracts, and review-pack framing. |
+| Safety boundary | Fixture data proves behavior; production use needs source-system contracts, ownership, lineage, and access policy. |
+| Fast proof | Run the pytest/ruff pipeline and inspect generated quality reports and contract outputs. |
+
 ## Architecture
 
 ```mermaid
