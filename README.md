@@ -29,6 +29,10 @@ A contract-first data lab that turns data quality from a slide into a repeatable
 - **Verification:** Run `make verify`; CI uses prebuilt artifact validation when a Spark/Java runtime is unavailable.
 - **Commercial read:** Position it as a data-contract starter for governed lakehouse and warehouse teams.
 
+## Commercialization Playbook
+
+- [Monetization and GTM playbook](docs/monetization-playbook.md) maps the repository to buyer segments, offer ladder, pricing hypotheses, proof gates, and risk boundaries.
+
 ## Architecture
 
 ```mermaid
