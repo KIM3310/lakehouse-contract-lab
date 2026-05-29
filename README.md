@@ -33,6 +33,11 @@ A contract-first data lab that turns data quality from a slide into a repeatable
 
 - [Monetization and GTM playbook](docs/monetization-playbook.md) maps the repository to buyer segments, offer ladder, pricing hypotheses, proof gates, and risk boundaries.
 
+## Executive Proof Pack
+
+- [Reviewer evidence map](docs/reviewer-evidence-map.md) gives a 7-minute route through the strongest hiring, buyer, and architecture signals.
+- [Quality gate](docs/quality-gate.md) lists the local checks, CI surface, release boundary, and no-key/demo expectations for this repository.
+
 ## Architecture
 
 ```mermaid
