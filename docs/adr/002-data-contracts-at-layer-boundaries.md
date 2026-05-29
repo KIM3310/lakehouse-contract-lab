@@ -49,7 +49,7 @@ If validation happened at ingestion time, rejected rows would be discarded befor
 Quality rules are defined in `data/quality_rules.json` as structured objects with a name, target layer, human-readable description, and rejection label. This declarative approach provides:
 
 - **Documentation as code**: Rule definitions serve as living documentation that stays synchronized with enforcement logic.
-- **Auditability**: The proof-pack artifact includes the full rule set, allowing reviewers to inspect the quality contract without reading Spark code.
+- **Auditability**: The review artifact includes the full rule set, allowing reviewers to inspect the quality contract without reading Spark code.
 - **Extensibility**: Adding a new rule requires only a JSON entry and a corresponding `WHEN` clause, rather than restructuring the pipeline.
 
 ### Priority-Ordered Evaluation

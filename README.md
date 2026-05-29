@@ -33,10 +33,10 @@ A contract-first data lab that turns data quality from a slide into a repeatable
 
 - [Monetization and GTM playbook](docs/monetization-playbook.md) maps the repository to buyer segments, offer ladder, pricing hypotheses, proof gates, and risk boundaries.
 
-## Executive Proof Pack
+## Review Notes
 
-- [Reviewer evidence map](docs/reviewer-evidence-map.md) gives a 7-minute route through the strongest technical, buyer, and architecture signals.
-- [Quality gate](docs/quality-gate.md) lists the local checks, CI surface, release boundary, and no-key/demo expectations for this repository.
+- [Review guide](docs/reviewer-evidence-map.md) summarizes the project angle, first files to inspect, verification commands, and known boundaries.
+- [Quality notes](docs/quality-gate.md) lists the local checks, CI surface, and release expectations for this repository.
 
 ## Architecture
 
@@ -94,7 +94,7 @@ flowchart LR
 | Dimension | Details |
 |-----------|---------|
 | **Primary architecture lane** | Data contracts, analytics platform operations, and lakehouse export reliability |
-| **Strongest proof** | Medallion pipeline structure, quality gates, export adapters, reviewer-readable proof-pack APIs |
+| **Strongest proof** | Medallion pipeline structure, quality gates, export adapters, and reviewer-readable runtime APIs |
 | **What is real** | Spark transforms, rejection logic, KPI rollups, Snowflake MERGE export logic, Databricks export bridges, local review surfaces |
 | **What is bounded** | Live Snowflake and Databricks exports only activate when credentials are configured; the seeded business dataset is synthetic |
 
@@ -193,7 +193,7 @@ Gold aggregates accepted silver rows by region into KPI columns: `gross_revenue_
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/health` | Service health with proof-pack links |
+| `GET` | `/health` | Service health with review-artifact links |
 | `GET` | `/api/runtime/quality-report` | Data quality gate results with rejected row preview |
 | `GET` | `/api/runtime/table-preview/{layer}` | Layer preview: `bronze` / `silver` / `gold` |
 | `GET` | `/api/runtime/pipeline-summary` | Pipeline metrics across all three layers |
