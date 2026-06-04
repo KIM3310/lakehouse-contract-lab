@@ -134,7 +134,9 @@ SKIP_PARTS = {
 
 def is_skipped(path: Path) -> bool:
     relative = path.relative_to(ROOT)
-    return path.name in SKIP_FILENAMES or any(part in SKIP_PARTS for part in relative.parts)
+    return path.name in SKIP_FILENAMES or any(
+        part in SKIP_PARTS for part in relative.parts
+    )
 
 
 def code_and_generated_files() -> list[Path]:
@@ -150,7 +152,10 @@ def is_external_or_route(target: str) -> bool:
     return (
         lowered.startswith(("http://", "https://", "mailto:", "tel:"))
         or target.startswith("#")
-        or (target.startswith("/") and not any(target.startswith(marker) for marker in LOCAL_PATH_MARKERS))
+        or (
+            target.startswith("/")
+            and not any(target.startswith(marker) for marker in LOCAL_PATH_MARKERS)
+        )
     )
 
 
