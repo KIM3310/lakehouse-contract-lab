@@ -50,9 +50,9 @@ Use this page as the short path through the repository. It keeps the review grou
 
 | Possible offer | Working scope assumption |
 |---|---|
-| Data-contract starter pack | $5k-$12k assessment |
-| Quality-gate implementation | $20k-$70k implementation |
-| Warehouse migration readiness review | $3k-$12k/month data quality ops |
+| Data-contract starter pack | Scope after buyer intake |
+| Quality-gate implementation | Scope after buyer intake |
+| Warehouse migration readiness review | Scope after buyer intake |
 
 ## Boundaries
 

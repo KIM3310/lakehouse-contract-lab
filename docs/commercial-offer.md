@@ -12,7 +12,7 @@ This is the buyer-ready version of the repository. It turns the technical proof 
 | Buyer | Data platform, BI, analytics engineering, and warehouse migration teams. |
 | Pain wedge | Contract-first medallion pipeline with quality gates and rejected-row evidence. |
 | Front-door offer | Data-contract starter pack |
-| Entry scope | $5k-$12k assessment |
+| Entry scope | Scope after buyer intake |
 | Proof before pitch | make verify passes |
 | Next buyer action | Review one proof artifact, then choose diagnostic, workshop, pilot, support, or revival path. |
 
@@ -20,9 +20,9 @@ This is the buyer-ready version of the repository. It turns the technical proof 
 
 | Offer | Scope assumption | Buyer-facing scope |
 |---|---|---|
-| Data-contract starter pack | $5k-$12k assessment | Publish contract failure examples |
-| Quality-gate implementation | $20k-$70k implementation | Create dbt/Spark comparison guide |
-| Warehouse migration readiness review | $3k-$12k/month data quality ops | Offer quality-gate sprint |
+| Data-contract starter pack | Scope after buyer intake | Publish contract failure examples |
+| Quality-gate implementation | Scope after buyer intake | Create dbt/Spark comparison guide |
+| Warehouse migration readiness review | Scope after buyer intake | Offer quality-gate sprint |
 
 ## Close Path
 

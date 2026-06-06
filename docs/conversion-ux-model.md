@@ -49,9 +49,9 @@ This note specializes the repository for service launch. It combines product str
 
 ## Conversion Path
 
-- Risk-reversing entry: Data-contract starter pack ($5k-$12k assessment) with one acceptance metric.
-- Pilot: Quality-gate implementation ($20k-$70k implementation) using buyer-approved data and named operators.
-- Recurring layer: Warehouse migration readiness review ($3k-$12k/month data quality ops) for monitoring, governance, support, or managed review.
+- Risk-reversing entry: Data-contract starter pack (scope after buyer intake) with one acceptance metric.
+- Pilot: Quality-gate implementation (scope after buyer intake) using buyer-approved data and named operators.
+- Recurring layer: Warehouse migration readiness review (scope after buyer intake) for monitoring, governance, support, or managed review.
 
 ## Scope Frame
 
