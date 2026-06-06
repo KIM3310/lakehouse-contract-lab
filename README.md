@@ -1,5 +1,10 @@
 # Lakehouse Contract Lab
 
+## Live Demo
+
+- [Open the public GitHub Pages demo](https://kim3310.github.io/lakehouse-contract-lab/)
+- Scope: credential-free, synthetic-data demo for reviewers and evaluators.
+
 [![CI](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/KIM3310/lakehouse-contract-lab/branch/main/graph/badge.svg)](https://codecov.io/gh/KIM3310/lakehouse-contract-lab)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
