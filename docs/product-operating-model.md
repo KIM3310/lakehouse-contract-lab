@@ -14,7 +14,7 @@ Spark + Delta medallion proof with quality gates and contract surfaces
 
 This repository is packaged as a concrete system surface, not a loose code sample. The enterprise value is a narrow proof that can be inspected, run, tested, and converted into a reviewed implementation motion.
 
-## Buyer And Service Path
+## Audience And Service Path
 
 | Area | Position |
 | --- | --- |
