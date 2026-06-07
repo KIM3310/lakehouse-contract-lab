@@ -21,8 +21,8 @@ A contract-first data lab that turns data quality from a slide into a repeatable
 
 | Lens | Definition |
 |---|---|
-| Buyer or user | Data platform teams, BI teams, analytics engineers, and migration leaders. |
-| Commercial route | Sell data-contract starter packs, quality-gate setup, rejected-row review workflows, and warehouse migration readiness reviews. |
+| Audience | Data platform teams, BI teams, analytics engineers, and migration leaders. |
+| Review path | Validate the demo, README, architecture notes, and quality gate before deeper workflow review. |
 | Review signal | Spark/Delta-style medallion pipeline, quality gates, warehouse export, contracts, and review-pack framing. |
 | Safety boundary | Fixture data proves behavior; production use needs source-system contracts, ownership, lineage, and access policy. |
 | Fast proof | Run the pytest/ruff pipeline and inspect generated quality reports and contract outputs. |
@@ -32,20 +32,16 @@ A contract-first data lab that turns data quality from a slide into a repeatable
 - **First minute:** Inspect the contract checks, quality reports, and medallion layer artifacts before deployment notes.
 - **Local demo:** Run `make smoke-no-build` for API review, then open `http://127.0.0.1:8096/docs`.
 - **Verification:** Run `make verify`; CI uses prebuilt artifact validation when a Spark/Java runtime is unavailable.
-- **Commercial read:** Position it as a data-contract starter for governed lakehouse and warehouse teams.
 
 ## Service Launch Playbook
 
-- [Service launch playbook](docs/service-launch-playbook.md) maps the repository to buyer segments, offer ladder, proof gates, proof gates, and risk boundaries.
+- [Service launch playbook](docs/service-launch-playbook.md) maps the repository to review audiences, offer ladder, proof gates, proof gates, and risk boundaries.
 
 ## Review Notes
 
 - [Review guide](docs/reviewer-evidence-map.md) summarizes the project angle, first files to inspect, verification commands, and known boundaries.
 - [Quality notes](docs/quality-gate.md) lists the local checks, CI surface, and release expectations for this repository.
-- [Service growth model](docs/service-growth-model.md) maps the project to an ethical service path, activation loop, scope logic, and growth experiments.
 - [Enterprise readiness notes](docs/enterprise-readiness.md) outlines security, data, operations, integration, and handoff expectations.
-- [Conversion UX model](docs/conversion-ux-model.md) maps the buyer path, behavioral design, UI/UX direction, scope frame, and ethical conversion guardrails.
-- [Commercial offer](docs/commercial-offer.md) packages the repository into a buyer-ready offer ladder, proof gate, outreach angle, and close path.
 
 ## Architecture
 
@@ -285,7 +281,7 @@ This repository includes a neutral cloud and AI engineering blueprint that maps 
 
 ## Enterprise Productization
 
-- [Product operating model](docs/product-operating-model.md) defines the buyer, paid wedge, trust boundary, operating checks, and service path for this repository.
+- [Product operating model](docs/product-operating-model.md) defines the reviewer, trust boundary, trust boundary, operating checks, and service path for this repository.
 
 ## Service Architecture
 

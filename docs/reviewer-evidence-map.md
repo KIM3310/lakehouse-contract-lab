@@ -46,13 +46,13 @@ Use this page as the short path through the repository. It keeps the review grou
 - CI passes without Spark hang
 - Quality reports are inspectable
 
-## Commercial Notes
+## Review Notes
 
 | Possible offer | Working scope assumption |
 |---|---|
-| Data-contract starter pack | Scope after buyer intake |
-| Quality-gate implementation | Scope after buyer intake |
-| Warehouse migration readiness review | Scope after buyer intake |
+| Data-contract starter pack | Scope after reviewer intake |
+| Quality-gate implementation | Scope after reviewer intake |
+| Warehouse migration readiness review | Scope after reviewer intake |
 
 ## Boundaries
 
