@@ -18,7 +18,7 @@
 <text x="110" y="414" fill="#c7d4e9" font-family="Arial,sans-serif" font-size="18">Delta log version tracked</text>
 <text x="430" y="350" fill="#caefdd" font-family="Arial,sans-serif" font-size="18">Customer, region, and amount validated</text>
 <text x="430" y="382" fill="#caefdd" font-family="Arial,sans-serif" font-size="18">Latest duplicate survives</text>
-<text x="430" y="414" fill="#caefdd" font-family="Arial,sans-serif" font-size="18">Rejected rows retained for review</text>
+<text x="430" y="414" fill="#caefdd" font-family="Arial,sans-serif" font-size="18">Rejected rows retained for architecture</text>
 <text x="830" y="350" fill="#fbe9bc" font-family="Arial,sans-serif" font-size="18">Region KPI contract for platform teams</text>
 <text x="830" y="382" fill="#fbe9bc" font-family="Arial,sans-serif" font-size="18">Revenue, completed orders, active pipeline</text>
 <text x="830" y="414" fill="#fbe9bc" font-family="Arial,sans-serif" font-size="18">Delta-backed gold table summary</text>

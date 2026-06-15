@@ -97,7 +97,7 @@ def health() -> dict[str, Any]:
     return {
         "ok": True,
         "schema": "lakehouse-contract-health-v1",
-        "reviewerFastPath": [
+        "architectureFastPath": [
             "/health",
             "/api/runtime/quality-report",
             "/api/runtime/table-preview/gold",

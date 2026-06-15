@@ -29,7 +29,7 @@ class TestHealthEndpoint:
     def test_health_exposes_proof_routes(self) -> None:
         payload: dict[str, Any] = client.get("/health").json()
         assert payload["openai_refresh"]["deploymentMode"] == "artifact-refresh-only"
-        assert payload["reviewerFastPath"][0] == "/health"
+        assert payload["architectureFastPath"][0] == "/health"
 
     def test_health_schema_marker(self) -> None:
         payload: dict[str, Any] = client.get("/health").json()

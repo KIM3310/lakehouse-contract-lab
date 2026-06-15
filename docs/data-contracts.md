@@ -61,28 +61,28 @@ When a row fails a quality gate at the bronze-to-silver boundary:
    - A `rejectedPreview` array showing the first 10 rejected rows with their order details and rejection reasons.
    - Summary statistics: `acceptedRows`, `failedRows`, `qualityPassRatePct`.
 
-5. **API exposure:** Rejected row data is accessible at `/api/runtime/quality-report` for programmatic review.
+5. **API exposure:** Rejected row data is accessible at `/api/runtime/quality-report` for programmatic architecture.
 
-## Rejected Row Review Queue
+## Rejected Row Architecture Queue
 
-Rejected rows are not discarded. They form a review queue that allows data engineers and analysts to:
+Rejected rows are not discarded. They form a architecture queue that allows data engineers and analysts to:
 
 - Identify systematic data quality issues in upstream sources.
 - Quantify the impact of quality violations on downstream KPIs.
 - Trace specific rejected rows back to their source by `order_id`.
 - Audit the pipeline's quality gate decisions.
 
-The review queue is surfaced through:
+The architecture queue is surfaced through:
 - `artifacts/quality-report.json` -- the `rejectedPreview` field.
 - `/api/runtime/quality-report` -- the API endpoint serving the same data.
-- `artifacts/review-summary.json` -- a high-level summary of pipeline health.
+- `artifacts/architecture-summary.json` -- a high-level summary of pipeline health.
 
 ## Contract Versioning
 
 Contracts are versioned through the `schema` field in each artifact:
 - `lakehouse-proof-pack-v1`
 - `lakehouse-quality-report-v1`
-- `lakehouse-review-summary-v1`
+- `lakehouse-architecture-summary-v1`
 - `lakehouse-table-preview-v1`
 - `lakehouse-source-pack-v1`
 

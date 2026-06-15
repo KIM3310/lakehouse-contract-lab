@@ -3,7 +3,7 @@
 ## Live Demo
 
 - [Open the public GitHub Pages demo](https://kim3310.github.io/lakehouse-contract-lab/)
-- Scope: credential-free, synthetic-data demo for reviewers and evaluators.
+- Scope: credential-free, synthetic-data demo for technical readers and evaluators.
 
 [![CI](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/KIM3310/lakehouse-contract-lab/branch/main/graph/badge.svg)](https://codecov.io/gh/KIM3310/lakehouse-contract-lab)
@@ -15,31 +15,31 @@ A production-grade **Spark + Delta Lake** medallion pipeline that enforces data 
 
 ---
 
-## Product and Review Surface
+## Product and System Surface
 
-A contract-first data lab that turns data quality from a slide into a repeatable pipeline and review artifact.
+A contract-first data lab that turns data quality from a slide into a repeatable pipeline and architecture artifact.
 
 | Lens | Definition |
 |---|---|
 | Audience | Data platform teams, BI teams, analytics engineers, and migration leaders. |
-| Review path | Validate the demo, README, architecture notes, and quality gate before deeper workflow review. |
-| Architecture signal | Spark/Delta-style medallion pipeline, quality gates, warehouse export, contracts, and review-pack framing. |
+| Architecture path | Validate the demo, README, architecture notes, and quality gate before deeper workflow architecture. |
+| System signal | Spark/Delta-style medallion pipeline, quality gates, warehouse export, contracts, and architecture-pack framing. |
 | Safety boundary | Fixture data proves behavior; production use needs source-system contracts, ownership, lineage, and access policy. |
-| Fast proof | Run the pytest/ruff pipeline and inspect generated quality reports and contract outputs. |
+| Fast path | Run the pytest/ruff pipeline and inspect generated quality reports and contract outputs. |
 
-## Reviewer Fast Path
+## System Fast Path
 
 - **First minute:** Inspect the contract checks, quality reports, and medallion layer artifacts before deployment notes.
-- **Local demo:** Run `make smoke-no-build` for API review, then open `http://127.0.0.1:8096/docs`.
+- **Local demo:** Run `make smoke-no-build` for API architecture, then open `http://127.0.0.1:8096/docs`.
 - **Verification:** Run `make verify`; CI uses prebuilt artifact validation when a Spark/Java runtime is unavailable.
 
 ## Service Launch Playbook
 
-- [Service launch playbook](docs/service-launch-playbook.md) maps the repository to review audiences, proof gates, operating boundaries, and risk controls.
+- [Service launch playbook](docs/service-launch-playbook.md) maps the repository to architecture audiences, operating gates, operating boundaries, and risk controls.
 
-## Review Notes
+## Architecture Notes
 
-- [Review guide](docs/reviewer-evidence-map.md) summarizes the project angle, first files to inspect, verification commands, and known boundaries.
+- [Architecture guide](docs/architecture-evidence-map.md) summarizes the project angle, first files to inspect, runtime commands, and known boundaries.
 - [Quality notes](docs/quality-gate.md) lists the local checks, CI surface, and release expectations for this repository.
 - [Enterprise readiness notes](docs/enterprise-readiness.md) outlines security, data, operations, integration, and handoff expectations.
 
@@ -59,7 +59,7 @@ flowchart LR
     subgraph Silver["Silver Layer"]
         GATES{"Quality Gates<br/>4 rules"}
         S_TABLE[("silver_orders<br/>Delta Table")]
-        REJECTED[/"Rejected Rows<br/>Review Queue"/]
+        REJECTED[/"Rejected Rows<br/>Architecture Queue"/]
         S_CONTRACT["Contract:<br/>- customer_id NOT NULL<br/>- region NOT NULL<br/>- amount > 0<br/>- Dedup by order_id"]
     end
 
@@ -99,8 +99,8 @@ flowchart LR
 | Dimension | Details |
 |-----------|---------|
 | **Primary architecture lane** | Data contracts, analytics platform operations, and lakehouse export reliability |
-| **Strongest proof** | Medallion pipeline structure, quality gates, export adapters, and reviewer-readable runtime APIs |
-| **What is real** | Spark transforms, rejection logic, KPI rollups, Snowflake MERGE export logic, Databricks export bridges, local review surfaces |
+| **Strongest proof** | Medallion pipeline structure, quality gates, export adapters, and technical reader-readable runtime APIs |
+| **What is real** | Spark transforms, rejection logic, KPI rollups, Snowflake MERGE export logic, Databricks export bridges, local architecture surfaces |
 | **What is bounded** | Live Snowflake and Databricks exports only activate when credentials are configured; the seeded business dataset is synthetic |
 
 ---
@@ -182,7 +182,7 @@ make serve      # starts the API server
 | `positive_amount` | `amount` | Must be > 0 | `non_positive_amount` |
 | `latest_order_record` | `order_id` | Dedup, keep newest | `stale_duplicate` |
 
-Rules are defined declaratively in `data/quality_rules.json` and enforced as chained PySpark `WHEN` expressions. Failed rows land in a rejected DataFrame with a `rejection_reason` label, accessible at `/api/runtime/quality-report`. Rejected rows are never discarded -- they form a review queue for data engineers to audit upstream quality issues.
+Rules are defined declaratively in `data/quality_rules.json` and enforced as chained PySpark `WHEN` expressions. Failed rows land in a rejected DataFrame with a `rejection_reason` label, accessible at `/api/runtime/quality-report`. Rejected rows are never discarded -- they form a architecture queue for data engineers to audit upstream quality issues.
 
 Gold aggregates accepted silver rows by region into KPI columns: `gross_revenue_usd`, `accepted_orders`, `completed_orders`, `pipeline_orders`, `distinct_customers`.
 
@@ -198,9 +198,9 @@ Gold aggregates accepted silver rows by region into KPI columns: `gross_revenue_
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/health` | Service health with review-artifact links |
+| `GET` | `/health` | Service health with architecture-artifact links |
 | `GET` | `/api/runtime/quality-report` | Data quality gate results with rejected row preview |
-| `GET` | `/api/runtime/table-preview/{layer}` | Layer preview: `bronze` / `silver` / `gold` |
+| `GET` | `/api/runtime/table-captures/{layer}` | Layer preview: `bronze` / `silver` / `gold` |
 | `GET` | `/api/runtime/pipeline-summary` | Pipeline metrics across all three layers |
 | `GET` | `/api/runtime/export-status` | Snowflake, Databricks, S3 export configuration status |
 
@@ -281,7 +281,7 @@ This repository includes a neutral cloud and AI engineering blueprint that maps 
 
 ## Enterprise Productization
 
-- [Product operating model](docs/product-operating-model.md) defines the reviewer, trust boundary, trust boundary, operating checks, and service path for this repository.
+- [Product operating model](docs/product-operating-model.md) defines the technical reader, trust boundary, trust boundary, operating checks, and service path for this repository.
 
 ## System Architecture
 

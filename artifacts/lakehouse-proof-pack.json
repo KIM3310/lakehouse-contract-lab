@@ -88,7 +88,7 @@
     ]
   },
   "snowflakeFit": {
-    "whyItMatters": "Shows contract-first medallion thinking, governed KPI outputs, and handoff-friendly review assets for solution engineering conversations.",
+    "whyItMatters": "Shows contract-first medallion thinking, governed KPI outputs, and handoff-friendly architecture assets for solution engineering conversations.",
     "reviewPath": [
       "/api/runtime/lakehouse-proof-pack",
       "/api/runtime/source-pack",

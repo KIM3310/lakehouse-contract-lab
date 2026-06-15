@@ -155,11 +155,11 @@ def build_review_summary_artifact(
         "service": proof_pack["service"],
         "generatedAt": NOW.isoformat(),
         "generationMode": "static-fallback",
-        "headline": "Refresh-only reviewer summary for Spark + Delta medallion proof.",
+        "headline": "Refresh-only architecture summary for Spark + Delta medallion proof.",
         "summary": {
             "platformFit": "snowflake-and-databricks-reviewable",
             "qualityPosture": "quality-gates-visible",
-            "handoffPosture": "reviewer-safe-read-only",
+            "handoffPosture": "public-safe-read-only",
             "nextAction": "Check quality report and gold preview together before making platform claims.",
         },
         "reviewPath": [
@@ -527,7 +527,7 @@ def main() -> None:
         "snowflakeFit": {
             "whyItMatters": (
                 "Shows contract-first medallion thinking, governed KPI outputs, and "
-                "handoff-friendly review assets for solution engineering conversations."
+                "handoff-friendly architecture assets for solution engineering conversations."
             ),
             "reviewPath": [
                 "/api/runtime/lakehouse-proof-pack",

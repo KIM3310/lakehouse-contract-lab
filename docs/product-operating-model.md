@@ -3,31 +3,31 @@
 ## Public Demo
 
 - URL: https://kim3310.github.io/lakehouse-contract-lab/
-- Scope: credential-free synthetic demo surface for quick reviewer inspection.
+- Scope: credential-free synthetic demo surface for quick technical reader inspection.
 
 Repository: `lakehouse-contract-lab`
-Last reviewed: 2026-06-03 KST
+Last updated: 2026-06-03 KST
 
 ## Enterprise Product Position
 
 Spark + Delta medallion proof with quality gates and contract surfaces
 
-This repository is packaged as a concrete system surface, not a loose code sample. The enterprise value is a narrow proof that can be inspected, run, tested, and converted into a reviewed implementation motion.
+This repository is packaged as a concrete system surface, not a loose code sample. The enterprise value is a narrow proof that can be inspected, run, tested, and converted into a scoped implementation motion.
 
 ## Audience And Service Path
 
 | Area | Position |
 | --- | --- |
-| Target reviewer | Data teams modernizing batch quality and contracts |
+| Target users | Data teams modernizing batch quality and contracts |
 | Service wedge | Data contract starter pack and migration advisory |
-| Review signal | Spark, data contracts, quality gates, warehouse export boundaries |
+| System signal | Spark, data contracts, quality gates, warehouse export boundaries |
 | Delivery shape | Fixed-scope pilot, integration sprint, and handoff-ready operating pack |
 | Expansion path | Add customer-specific adapters, policy controls, observability, and support SLAs after the pilot proves value |
 
 ## Enterprise Trust Boundary
 
 - Keep credentials out of the repository and require environment-based configuration for live integrations.
-- Treat generated screenshots, fixtures, and sample data as non-customer proof assets unless explicitly reviewed.
+- Treat generated screenshots, fixtures, and sample data as non-customer proof assets unless explicitly approved.
 - Keep CI, repository-surface validation, architecture manifest checks, and secret scanning green before presenting the repo externally.
 - Use the architecture blueprint as the source of truth for cloud, AI, data, and operational boundaries.
 - Document any unsupported production assumption before a customer or evaluator sees the demo.
