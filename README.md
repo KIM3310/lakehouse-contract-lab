@@ -23,7 +23,7 @@ A contract-first data lab that turns data quality from a slide into a repeatable
 |---|---|
 | Audience | Data platform teams, BI teams, analytics engineers, and migration leaders. |
 | Review path | Validate the demo, README, architecture notes, and quality gate before deeper workflow review. |
-| Review signal | Spark/Delta-style medallion pipeline, quality gates, warehouse export, contracts, and review-pack framing. |
+| Architecture signal | Spark/Delta-style medallion pipeline, quality gates, warehouse export, contracts, and review-pack framing. |
 | Safety boundary | Fixture data proves behavior; production use needs source-system contracts, ownership, lineage, and access policy. |
 | Fast proof | Run the pytest/ruff pipeline and inspect generated quality reports and contract outputs. |
 
@@ -282,6 +282,10 @@ This repository includes a neutral cloud and AI engineering blueprint that maps 
 ## Enterprise Productization
 
 - [Product operating model](docs/product-operating-model.md) defines the reviewer, trust boundary, trust boundary, operating checks, and service path for this repository.
+
+## System Architecture
+
+- [System architecture](docs/system-architecture.md) maps the runtime boundary, data/control flow, cloud or local deployment surface, and operating assumptions for this repository.
 
 ## Service Architecture
 
