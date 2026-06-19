@@ -11,7 +11,7 @@ version = "1.0.0"
 description = "Spark + Delta medallion proof with quality gates and contract surfaces"
 requires-python = ">=3.11"
 license = {text = "MIT"}
-authors = [{name = "Doeon Kim", email = "ehdjs1351@gmail.com"}]
+authors = [{name = "Doeon Kim"}]
 keywords = ["spark", "delta-lake", "medallion", "data-contracts", "snowflake"]
 dependencies = [
     "fastapi==0.121.3",
