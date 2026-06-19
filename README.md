@@ -289,3 +289,17 @@ This repository includes a neutral cloud and AI engineering blueprint that maps 
 ## Service Architecture
 
 - [Service architecture](docs/service-architecture.md) defines the cloud resources, account information, cost controls, and production guardrails needed to turn this repo into a scoped service without publishing public financial assumptions.
+
+<!-- search-growth-readme:start -->
+
+## Search And Service Surface
+
+- Public entry: free synthetic pipeline and contract examples
+- Paid boundary: paid connector templates, contract migration pack, and recurring data quality report
+- Canonical URL: https://kim3310.github.io/lakehouse-contract-lab/
+- Lead capture: mailto:ehdjs1351@gmail.com?subject=Lakehouse%20Contract%20Lab%20private%20workspace&body=I%20am%20interested%20in%20paid%20connector%20templates%2C%20contract%20migration%20pack%2C%20and%20recurring%20data%20quality%20report%20for%20Lakehouse%20Contract%20Lab.
+- Machine-readable offer: [docs/service-offer.json](docs/service-offer.json)
+- Search growth implementation: [docs/search-growth-implementation.md](docs/search-growth-implementation.md)
+- Revenue architecture: [docs/revenue-architecture.md](docs/revenue-architecture.md)
+
+<!-- search-growth-readme:end -->

@@ -1,0 +1,73 @@
+{
+  "name": "Lakehouse Contract Lab",
+  "slug": "lakehouse-contract-lab",
+  "canonical_url": "https://kim3310.github.io/lakehouse-contract-lab/",
+  "repository_url": "https://github.com/KIM3310/lakehouse-contract-lab",
+  "architecture_url": "https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/system-architecture.md",
+  "revenue_architecture_url": "https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/revenue-architecture.md",
+  "lead_capture_url": "mailto:ehdjs1351@gmail.com?subject=Lakehouse%20Contract%20Lab%20private%20workspace&body=I%20am%20interested%20in%20paid%20connector%20templates%2C%20contract%20migration%20pack%2C%20and%20recurring%20data%20quality%20report%20for%20Lakehouse%20Contract%20Lab.",
+  "productized_offer": "lakehouse contract compiler, quality gate, artifact builder, and export adapter lab",
+  "first_paid_sku": "paid connector templates, contract migration pack, and recurring data quality report",
+  "free_lead_magnet": "free synthetic pipeline and contract examples",
+  "search_positioning": {
+    "primary_query": "Lakehouse Contract Lab compiler quality gate",
+    "secondary_queries": [
+      "Lakehouse Contract Lab demo",
+      "Lakehouse Contract Lab system architecture",
+      "Lakehouse Contract Lab developer tool",
+      "lakehouse contract compiler, quality gate, artifact builder, and export adapter lab service"
+    ],
+    "audience_intent": "Find a runnable demo, inspect the system architecture, and decide whether a private workspace or implementation package is useful."
+  },
+  "monetization_boundary": {
+    "free": "free synthetic pipeline and contract examples",
+    "paid": "paid connector templates, contract migration pack, and recurring data quality report",
+    "metering_hooks": [
+      "workspace_id",
+      "plan",
+      "quota_day",
+      "export_count",
+      "lead_source"
+    ],
+    "cost_guardrails": [
+      "static first",
+      "edge functions",
+      "customer API keys",
+      "cached AI outputs",
+      "synthetic public data"
+    ]
+  },
+  "structured_data": {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Lakehouse Contract Lab",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Web, serverless, and local development environments",
+    "url": "https://kim3310.github.io/lakehouse-contract-lab/",
+    "codeRepository": "https://github.com/KIM3310/lakehouse-contract-lab",
+    "description": "Lakehouse Contract Lab: lakehouse contract compiler, quality gate, artifact builder, and export adapter lab. Free entry point: free synthetic pipeline and contract examples. Paid path: paid connector templates, contract.",
+    "creator": {
+      "@type": "Person",
+      "name": "KIM3310",
+      "url": "https://github.com/KIM3310"
+    },
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "free synthetic pipeline and contract examples",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "url": "https://kim3310.github.io/lakehouse-contract-lab/"
+      },
+      {
+        "@type": "Offer",
+        "name": "paid connector templates, contract migration pack, and recurring data quality report",
+        "availability": "https://schema.org/LimitedAvailability",
+        "url": "https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/revenue-architecture.md"
+      }
+    ],
+    "isAccessibleForFree": true,
+    "keywords": "lakehouse-contract-lab, Lakehouse, Contract, Lab, lakehouse, contract, compiler, quality, gate, artifact, builder, export, adapter, lab, connector, templates, migration, pack, recurring, data, synthetic, pipeline"
+  }
+}
