@@ -2,7 +2,7 @@
   {
     "case_id": "LHC-VAL-01",
     "focus": "null customer handling",
-    "assertion": "Rows with missing customer_id should stay in rejected review rows.",
+    "assertion": "Rows with missing customer_id should stay in rejected quarantine rows.",
     "expected_status": "pass"
   },
   {
@@ -14,7 +14,7 @@
   {
     "case_id": "LHC-VAL-03",
     "focus": "non-positive revenue",
-    "assertion": "Rows with amount <= 0 should be isolated with a review reason.",
+    "assertion": "Rows with amount <= 0 should be isolated with a quarantine reason.",
     "expected_status": "pass"
   },
   {

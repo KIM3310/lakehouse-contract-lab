@@ -138,23 +138,23 @@
               <p id="scenario-detail">Shows records moving through schema checks, freshness windows, and quality gates.</p>
             </article>
             <article class="timeline">
-              <h3>Review flow</h3>
+              <h3>Architecture flow</h3>
               <div class="step"><b>1</b><span>Open a synthetic scenario that matches the repository's core workflow.</span></div>
               <div class="step"><b>2</b><span>Inspect the signal, boundary, and architecture-facing output without credentials.</span></div>
-              <div class="step"><b>3</b><span>Use the source repository and local verification command for implementation-level review.</span></div>
+              <div class="step"><b>3</b><span>Use the source repository and local verification command for implementation-level inspection.</span></div>
             </article>
           </div>
         </div>
       </section>
     </section>
 
-    <section class="below" aria-label="Review details">
+    <section class="below" aria-label="Architecture details">
       <article class="notice">
         <h3>Target users</h3>
         <p>Data teams modernizing batch quality and data contracts</p>
       </article>
       <article class="notice">
-        <h3>Review path</h3>
+        <h3>Architecture path</h3>
         <p>Data contract starter pack and migration advisory</p>
       </article>
       <article class="notice">
@@ -165,7 +165,7 @@
   </main>
 
   <script>
-    const scenarios = [{"title":"Bronze to silver gate","metric":"97.8% accepted","detail":"Shows records moving through schema checks, freshness windows, and quality gates."},{"title":"Rejected-row queue","metric":"14 rows quarantined","detail":"Keeps bad records visible with failure reasons instead of silently dropping data."},{"title":"KPI export","metric":"3 governed marts","detail":"Demonstrates controlled outputs for Snowflake, Databricks, and downstream dashboard review."}];
+    const scenarios = [{"title":"Bronze to silver gate","metric":"97.8% accepted","detail":"Shows records moving through schema checks, freshness windows, and quality gates."},{"title":"Rejected-row queue","metric":"14 rows quarantined","detail":"Keeps bad records visible with failure reasons instead of silently dropping data."},{"title":"KPI export","metric":"3 governed marts","detail":"Demonstrates controlled outputs for Snowflake, Databricks, and downstream dashboard inspection."}];
     const buttons = Array.from(document.querySelectorAll('.scenario-button'));
     const title = document.getElementById('scenario-title');
     const metric = document.getElementById('scenario-metric');

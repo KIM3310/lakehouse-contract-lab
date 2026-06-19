@@ -3,7 +3,7 @@
 ## Live Demo
 
 - [Open the public GitHub Pages demo](https://kim3310.github.io/lakehouse-contract-lab/)
-- Scope: credential-free, synthetic-data demo for technical readers and evaluators.
+- Scope: credential-free, synthetic-data demo for architecture inspection and evaluators.
 
 [![CI](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/KIM3310/lakehouse-contract-lab/branch/main/graph/badge.svg)](https://codecov.io/gh/KIM3310/lakehouse-contract-lab)
@@ -99,7 +99,7 @@ flowchart LR
 | Dimension | Details |
 |-----------|---------|
 | **Primary architecture lane** | Data contracts, analytics platform operations, and lakehouse export reliability |
-| **Strongest proof** | Medallion pipeline structure, quality gates, export adapters, and technical reader-readable runtime APIs |
+| **Strongest proof** | Medallion pipeline structure, quality gates, export adapters, and architecture-readable runtime APIs |
 | **What is real** | Spark transforms, rejection logic, KPI rollups, Snowflake MERGE export logic, Databricks export bridges, local architecture surfaces |
 | **What is bounded** | Live Snowflake and Databricks exports only activate when credentials are configured; the seeded business dataset is synthetic |
 
@@ -249,12 +249,11 @@ lakehouse-contract-lab/
 
 ---
 
-## Latest Verified Snapshot
+## Operating Commands
 
-- **Verified on:** 2026-04-07
-- **Command:** `make verify`
-- **Outcome:** Passed locally; self-healing Python 3.11 bootstrap, 81 tests, lint, prebuilt artifact validation, and smoke checks completed successfully
-- **Notes:** Snowflake export tests and Snowflake export bridge tests were rerun successfully in the repo venv, while fresh Spark assembly remains gated by local Java availability
+- `make verify` runs the Python bootstrap, lint, pipeline tests, artifact checks, and smoke checks.
+- `python -m pytest tests -q` exercises the contract compiler, export adapters, API surface, and resource pack.
+- `python scripts/build_prebuilt_artifacts.py` refreshes the local JSON/Delta artifacts used by demos and API smoke checks.
 
 ---
 
@@ -281,7 +280,7 @@ This repository includes a neutral cloud and AI engineering blueprint that maps 
 
 ## Enterprise Productization
 
-- [Product operating model](docs/product-operating-model.md) defines the technical reader, trust boundary, trust boundary, operating checks, and service path for this repository.
+- [Product operating model](docs/product-operating-model.md) defines the technical inspection, trust boundary, trust boundary, operating checks, and service path for this repository.
 
 ## System Architecture
 

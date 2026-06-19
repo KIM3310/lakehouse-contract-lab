@@ -36,7 +36,7 @@ class TestHealthEndpoint:
         assert payload["schema"] == "lakehouse-contract-health-v1"
 
 
-class TestQualityAndReviewEndpoints:
+class TestQualityAndArchitectureEndpoints:
     def test_quality_report_returns_200(self) -> None:
         response = client.get("/api/runtime/quality-report")
         assert response.status_code == 200
@@ -45,8 +45,8 @@ class TestQualityAndReviewEndpoints:
         payload: dict[str, Any] = client.get("/api/runtime/quality-report").json()
         assert payload["schema"] == "lakehouse-quality-report-v1"
 
-    def test_review_summary_returns_404(self) -> None:
-        response = client.get("/api/runtime/review-summary")
+    def test_architecture_summary_returns_404(self) -> None:
+        response = client.get("/api/runtime/architecture-summary")
         assert response.status_code == 404
 
     def test_source_pack_returns_404(self) -> None:

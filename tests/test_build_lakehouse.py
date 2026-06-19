@@ -91,7 +91,7 @@ class TestMedallionSourceContract:
             assert row["order_id"].startswith("O-"), f"Unexpected order_id format: {row['order_id']}"
 
 
-class TestQualityGateAndReviewSummary:
+class TestQualityGateAndArchitectureSummary:
     def _make_inputs(self) -> tuple[dict, dict]:
         proof_pack = {
             "service": "lakehouse-contract-lab",
@@ -102,35 +102,35 @@ class TestQualityGateAndReviewSummary:
         }
         return proof_pack, quality_report
 
-    def test_review_summary_fallback_schema(self, bla) -> None:
+    def test_architecture_summary_fallback_schema(self, bla) -> None:
         proof_pack, quality_report = self._make_inputs()
-        result = bla.build_review_summary_artifact(proof_pack, quality_report)
-        assert result["schema"] == "lakehouse-review-summary-v1"
+        result = bla.build_architecture_summary_artifact(proof_pack, quality_report)
+        assert result["schema"] == "lakehouse-architecture-summary-v1"
         assert result["service"] == "lakehouse-contract-lab"
         assert result["generationMode"] == "static-fallback"
 
-    def test_review_summary_contains_proof_assets(self, bla) -> None:
+    def test_architecture_summary_contains_proof_assets(self, bla) -> None:
         proof_pack, quality_report = self._make_inputs()
-        result = bla.build_review_summary_artifact(proof_pack, quality_report)
+        result = bla.build_architecture_summary_artifact(proof_pack, quality_report)
         assert "proofAssets" in result
-        assert isinstance(result["reviewPath"], list)
-        assert len(result["reviewPath"]) >= 1
+        assert isinstance(result["architecturePath"], list)
+        assert len(result["architecturePath"]) >= 1
 
-    def test_review_summary_has_headline(self, bla) -> None:
+    def test_architecture_summary_has_headline(self, bla) -> None:
         proof_pack, quality_report = self._make_inputs()
-        result = bla.build_review_summary_artifact(proof_pack, quality_report)
+        result = bla.build_architecture_summary_artifact(proof_pack, quality_report)
         assert isinstance(result["headline"], str)
         assert len(result["headline"]) > 0
 
-    def test_review_summary_has_generated_at(self, bla) -> None:
+    def test_architecture_summary_has_generated_at(self, bla) -> None:
         proof_pack, quality_report = self._make_inputs()
-        result = bla.build_review_summary_artifact(proof_pack, quality_report)
+        result = bla.build_architecture_summary_artifact(proof_pack, quality_report)
         assert "generatedAt" in result
         datetime.fromisoformat(result["generatedAt"])
 
-    def test_review_summary_fallback_summary_keys(self, bla) -> None:
+    def test_architecture_summary_fallback_summary_keys(self, bla) -> None:
         proof_pack, quality_report = self._make_inputs()
-        result = bla.build_review_summary_artifact(proof_pack, quality_report)
+        result = bla.build_architecture_summary_artifact(proof_pack, quality_report)
         expected_keys = {"platformFit", "qualityPosture", "handoffPosture", "nextAction"}
         assert expected_keys == set(result["summary"].keys())
 
@@ -225,8 +225,8 @@ class TestContractSurfaceApi:
                 ],
                 "rejectedReasons": [],
             },
-            "snowflakeFit": {"whyItMatters": "", "reviewPath": []},
-            "databricksFit": {"whyItMatters": "", "reviewPath": []},
+            "snowflakeFit": {"whyItMatters": "", "architecturePath": []},
+            "databricksFit": {"whyItMatters": "", "architecturePath": []},
             "proofAssets": [],
             "links": {},
         }
@@ -236,7 +236,7 @@ class TestContractSurfaceApi:
             "expectations": [],
             "rejectedPreview": [],
         }
-        review = {"schema": "lakehouse-review-summary-v1"}
+        architecture = {"schema": "lakehouse-architecture-summary-v1"}
         gold_prev = {"layer": "gold", "rows": [{"region": "KR-SEOUL"}]}
         bronze_prev = {"layer": "bronze", "rows": [{"order_id": "O-1001"}]}
         silver_prev = {"layer": "silver", "rows": [{"order_id": "O-1001"}]}
@@ -244,7 +244,7 @@ class TestContractSurfaceApi:
         for name, data in [
             ("lakehouse-proof-pack.json", proof),
             ("quality-report.json", quality),
-            ("review-summary.json", review),
+            ("architecture-summary.json", architecture),
             ("gold-preview.json", gold_prev),
             ("bronze-preview.json", bronze_prev),
             ("silver-preview.json", silver_prev),

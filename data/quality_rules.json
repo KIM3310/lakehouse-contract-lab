@@ -14,7 +14,7 @@
   {
     "name": "positive_amount",
     "layer": "silver",
-    "rule": "non-positive revenue is isolated into rejected review rows.",
+    "rule": "non-positive revenue is isolated into rejected quarantine rows.",
     "rejected_label": "non_positive_amount"
   },
   {

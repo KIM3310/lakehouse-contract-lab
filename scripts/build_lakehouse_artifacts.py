@@ -81,7 +81,7 @@ def validate_prebuilt_artifacts() -> None:
     required_paths = [
         ARTIFACTS_DIR / "lakehouse-proof-pack.json",
         ARTIFACTS_DIR / "quality-report.json",
-        ARTIFACTS_DIR / "review-summary.json",
+        ARTIFACTS_DIR / "architecture-summary.json",
         ARTIFACTS_DIR / "bronze-preview.json",
         ARTIFACTS_DIR / "silver-preview.json",
         ARTIFACTS_DIR / "gold-preview.json",
@@ -145,24 +145,24 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
     logger.info("Wrote artifact: %s", path.name)
 
 
-def build_review_summary_artifact(
+def build_architecture_summary_artifact(
     proof_pack: dict[str, Any],
     quality_report: dict[str, Any],
 ) -> dict[str, Any]:
-    """Build review-summary. Uses OpenAI if OPENAI_API_KEY is set, otherwise static fallback."""
+    """Build architecture-summary. Uses OpenAI if OPENAI_API_KEY is set, otherwise static fallback."""
     fallback: dict[str, Any] = {
-        "schema": "lakehouse-review-summary-v1",
+        "schema": "lakehouse-architecture-summary-v1",
         "service": proof_pack["service"],
         "generatedAt": NOW.isoformat(),
         "generationMode": "static-fallback",
         "headline": "Refresh-only architecture summary for Spark + Delta medallion proof.",
         "summary": {
-            "platformFit": "snowflake-and-databricks-reviewable",
+            "platformFit": "snowflake-and-databricks-inspectable",
             "qualityPosture": "quality-gates-visible",
             "handoffPosture": "public-safe-read-only",
             "nextAction": "Check quality report and gold preview together before making platform claims.",
         },
-        "reviewPath": [
+        "architecturePath": [
             "/api/runtime/lakehouse-proof-pack",
             "/api/runtime/quality-report",
             "/api/runtime/table-preview/gold",
@@ -175,10 +175,10 @@ def build_review_summary_artifact(
     }
     api_key: str = str(os.getenv("OPENAI_API_KEY", "")).strip()
     if not api_key:
-        logger.info("No OPENAI_API_KEY set; using static fallback for review summary")
+        logger.info("No OPENAI_API_KEY set; using static fallback for architecture summary")
         return fallback
 
-    logger.info("Requesting OpenAI-enriched review summary")
+    logger.info("Requesting OpenAI-enriched architecture summary")
     schema: dict[str, Any] = {
         "type": "object",
         "additionalProperties": False,
@@ -206,7 +206,7 @@ def build_review_summary_artifact(
                 "response_format": {
                     "type": "json_schema",
                     "json_schema": {
-                        "name": "lakehouse_review_summary",
+                        "name": "lakehouse_architecture_summary",
                         "schema": schema,
                     },
                 },
@@ -238,9 +238,9 @@ def build_review_summary_artifact(
             body: dict[str, Any] = json.loads(response.read().decode("utf-8"))
         content: str = str(((body.get("choices") or [{}])[0].get("message") or {}).get("content") or "").strip()
         parsed: dict[str, str] = json.loads(content)
-        logger.info("OpenAI review summary generated successfully")
+        logger.info("OpenAI architecture summary generated successfully")
         return {
-            "schema": "lakehouse-review-summary-v1",
+            "schema": "lakehouse-architecture-summary-v1",
             "service": proof_pack["service"],
             "generatedAt": NOW.isoformat(),
             "generationMode": "openai-refresh",
@@ -251,7 +251,7 @@ def build_review_summary_artifact(
                 "handoffPosture": parsed["handoffPosture"],
                 "nextAction": parsed["nextAction"],
             },
-            "reviewPath": fallback["reviewPath"],
+            "architecturePath": fallback["architecturePath"],
             "proofAssets": fallback["proofAssets"],
         }
     except (
@@ -262,7 +262,7 @@ def build_review_summary_artifact(
         TypeError,
         ValueError,
     ) as exc:
-        logger.warning("OpenAI review-summary refresh failed (%s: %s); using static fallback", type(exc).__name__, exc)
+        logger.warning("OpenAI architecture-summary refresh failed (%s: %s); using static fallback", type(exc).__name__, exc)
         return fallback
 
 
@@ -291,7 +291,7 @@ def build_svg(proof_pack: dict[str, Any]) -> None:
         '<text x="110" y="414" fill="#c7d4e9" font-family="Arial,sans-serif" font-size="18">Delta log version tracked</text>',
         '<text x="430" y="350" fill="#caefdd" font-family="Arial,sans-serif" font-size="18">Customer, region, and amount validated</text>',
         '<text x="430" y="382" fill="#caefdd" font-family="Arial,sans-serif" font-size="18">Latest duplicate survives</text>',
-        '<text x="430" y="414" fill="#caefdd" font-family="Arial,sans-serif" font-size="18">Rejected rows retained for review</text>',
+        '<text x="430" y="414" fill="#caefdd" font-family="Arial,sans-serif" font-size="18">Rejected rows retained for quarantine inspection</text>',
         '<text x="830" y="350" fill="#fbe9bc" font-family="Arial,sans-serif" font-size="18">Region KPI contract for platform teams</text>',
         '<text x="830" y="382" fill="#fbe9bc" font-family="Arial,sans-serif" font-size="18">Revenue, completed orders, active pipeline</text>',
         '<text x="830" y="414" fill="#fbe9bc" font-family="Arial,sans-serif" font-size="18">Delta-backed gold table summary</text>',
@@ -439,7 +439,7 @@ def main() -> None:
             "layer": "silver",
             "passed": bronze.filter(F.col("amount") > 0).count(),
             "failed": bronze.filter(F.col("amount") <= 0).count(),
-            "rule": "non-positive revenue is isolated into rejected review rows.",
+            "rule": "non-positive revenue is isolated into rejected quarantine rows.",
         },
         {
             "name": "latest_order_record",
@@ -484,7 +484,7 @@ def main() -> None:
                 "contract": [
                     "raw order envelope preserved",
                     "ingested_at attached",
-                    "source_rank retained for duplicate review",
+                    "source_rank retained for duplicate inspection",
                 ],
             },
             {
@@ -512,7 +512,7 @@ def main() -> None:
         ],
         "governance": {
             "approvalBoundary": (
-                "Only silver-accepted rows can shape gold KPIs; rejected rows stay queryable for human review."
+                "Only silver-accepted rows can shape gold KPIs; rejected rows stay queryable for human approval."
             ),
             "expectations": expectations,
             "rejectedReasons": [
@@ -529,7 +529,7 @@ def main() -> None:
                 "Shows contract-first medallion thinking, governed KPI outputs, and "
                 "handoff-friendly architecture assets for solution engineering conversations."
             ),
-            "reviewPath": [
+            "architecturePath": [
                 "/api/runtime/lakehouse-proof-pack",
                 "/api/runtime/table-preview/gold",
                 "docs/lakehouse-contract-board.svg",
@@ -540,7 +540,7 @@ def main() -> None:
                 "Uses real Spark + Delta execution and exposes quality gates, Delta "
                 "versions, and medallion transitions as explicit public proof."
             ),
-            "reviewPath": [
+            "architecturePath": [
                 "/api/runtime/lakehouse-proof-pack",
                 "/api/runtime/quality-report",
                 "scripts/build_lakehouse_artifacts.py",
@@ -631,7 +631,7 @@ def main() -> None:
 
     write_json(ARTIFACTS_DIR / "lakehouse-proof-pack.json", proof_pack)
     write_json(ARTIFACTS_DIR / "quality-report.json", quality_report)
-    write_json(ARTIFACTS_DIR / "review-summary.json", build_review_summary_artifact(proof_pack, quality_report))
+    write_json(ARTIFACTS_DIR / "architecture-summary.json", build_architecture_summary_artifact(proof_pack, quality_report))
     write_json(
         ARTIFACTS_DIR / "source-pack.json",
         {

@@ -145,7 +145,7 @@
     {
       "name": "positive_amount",
       "layer": "silver",
-      "rule": "non-positive revenue is isolated into rejected review rows.",
+      "rule": "non-positive revenue is isolated into rejected quarantine rows.",
       "rejected_label": "non_positive_amount"
     },
     {
@@ -181,7 +181,7 @@
     {
       "case_id": "LHC-VAL-01",
       "focus": "null customer handling",
-      "assertion": "Rows with missing customer_id should stay in rejected review rows.",
+      "assertion": "Rows with missing customer_id should stay in rejected quarantine rows.",
       "expected_status": "pass"
     },
     {
@@ -193,7 +193,7 @@
     {
       "case_id": "LHC-VAL-03",
       "focus": "non-positive revenue",
-      "assertion": "Rows with amount <= 0 should be isolated with a review reason.",
+      "assertion": "Rows with amount <= 0 should be isolated with a quarantine reason.",
       "expected_status": "pass"
     },
     {

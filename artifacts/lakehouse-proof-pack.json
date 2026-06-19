@@ -22,7 +22,7 @@
       "contract": [
         "raw order envelope preserved",
         "ingested_at attached",
-        "source_rank retained for duplicate review"
+        "source_rank retained for duplicate inspection"
       ]
     },
     {
@@ -49,7 +49,7 @@
     }
   ],
   "governance": {
-    "approvalBoundary": "Only silver-accepted rows can shape gold KPIs; rejected rows stay queryable for human review.",
+    "approvalBoundary": "Only silver-accepted rows can shape gold KPIs; rejected rows stay queryable for human approval.",
     "expectations": [
       {
         "name": "customer_present",
@@ -70,7 +70,7 @@
         "layer": "silver",
         "passed": 11,
         "failed": 1,
-        "rule": "non-positive revenue is isolated into rejected review rows."
+        "rule": "non-positive revenue is isolated into rejected quarantine rows."
       },
       {
         "name": "latest_order_record",
@@ -89,7 +89,7 @@
   },
   "snowflakeFit": {
     "whyItMatters": "Shows contract-first medallion thinking, governed KPI outputs, and handoff-friendly architecture assets for solution engineering conversations.",
-    "reviewPath": [
+    "architecturePath": [
       "/api/runtime/lakehouse-proof-pack",
       "/api/runtime/source-pack",
       "/api/runtime/table-preview/gold",
@@ -98,7 +98,7 @@
   },
   "databricksFit": {
     "whyItMatters": "Uses real Spark + Delta execution and exposes quality gates, Delta versions, and medallion transitions as explicit public proof.",
-    "reviewPath": [
+    "architecturePath": [
       "/api/runtime/lakehouse-proof-pack",
       "/api/runtime/quality-report",
       "scripts/build_lakehouse_artifacts.py"
@@ -144,7 +144,7 @@
       {
         "name": "positive_amount",
         "layer": "silver",
-        "rule": "non-positive revenue is isolated into rejected review rows.",
+        "rule": "non-positive revenue is isolated into rejected quarantine rows.",
         "rejected_label": "non_positive_amount"
       },
       {
@@ -180,7 +180,7 @@
       {
         "case_id": "LHC-VAL-01",
         "focus": "null customer handling",
-        "assertion": "Rows with missing customer_id should stay in rejected review rows.",
+        "assertion": "Rows with missing customer_id should stay in rejected quarantine rows.",
         "expected_status": "pass"
       },
       {
@@ -192,7 +192,7 @@
       {
         "case_id": "LHC-VAL-03",
         "focus": "non-positive revenue",
-        "assertion": "Rows with amount <= 0 should be isolated with a review reason.",
+        "assertion": "Rows with amount <= 0 should be isolated with a quarantine reason.",
         "expected_status": "pass"
       },
       {

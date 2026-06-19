@@ -40,7 +40,7 @@ app = FastAPI(
         },
         {
             "name": "pipeline",
-            "description": "Pipeline artifact endpoints (pipeline summary, quality report, review summary).",
+            "description": "Pipeline artifact endpoints (pipeline summary, quality report, architecture summary).",
         },
         {
             "name": "resources",

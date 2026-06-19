@@ -27,7 +27,7 @@
       "layer": "silver",
       "passed": 11,
       "failed": 1,
-      "rule": "non-positive revenue is isolated into rejected review rows."
+      "rule": "non-positive revenue is isolated into rejected quarantine rows."
     },
     {
       "name": "latest_order_record",
