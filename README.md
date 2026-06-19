@@ -297,7 +297,7 @@ This repository includes a neutral cloud and AI engineering blueprint that maps 
 - Public entry: free synthetic pipeline and contract examples
 - Paid boundary: paid connector templates, contract migration pack, and recurring data quality report
 - Canonical URL: https://kim3310.github.io/lakehouse-contract-lab/
-- Lead capture: mailto:ehdjs1351@gmail.com?subject=Lakehouse%20Contract%20Lab%20private%20workspace&body=I%20am%20interested%20in%20paid%20connector%20templates%2C%20contract%20migration%20pack%2C%20and%20recurring%20data%20quality%20report%20for%20Lakehouse%20Contract%20Lab.
+- Lead capture: https://github.com/KIM3310/lakehouse-contract-lab/issues/new?template=service-inquiry.yml&title=Private+workspace+inquiry%3A+Lakehouse+Contract+Lab
 - Machine-readable offer: [docs/service-offer.json](docs/service-offer.json)
 - Search growth implementation: [docs/search-growth-implementation.md](docs/search-growth-implementation.md)
 - Revenue architecture: [docs/revenue-architecture.md](docs/revenue-architecture.md)

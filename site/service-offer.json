@@ -5,7 +5,7 @@
   "repository_url": "https://github.com/KIM3310/lakehouse-contract-lab",
   "architecture_url": "https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/system-architecture.md",
   "revenue_architecture_url": "https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/revenue-architecture.md",
-  "lead_capture_url": "mailto:ehdjs1351@gmail.com?subject=Lakehouse%20Contract%20Lab%20private%20workspace&body=I%20am%20interested%20in%20paid%20connector%20templates%2C%20contract%20migration%20pack%2C%20and%20recurring%20data%20quality%20report%20for%20Lakehouse%20Contract%20Lab.",
+  "lead_capture_url": "https://github.com/KIM3310/lakehouse-contract-lab/issues/new?template=service-inquiry.yml&title=Private+workspace+inquiry%3A+Lakehouse+Contract+Lab",
   "productized_offer": "lakehouse contract compiler, quality gate, artifact builder, and export adapter lab",
   "first_paid_sku": "paid connector templates, contract migration pack, and recurring data quality report",
   "free_lead_magnet": "free synthetic pipeline and contract examples",
