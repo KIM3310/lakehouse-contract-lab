@@ -182,7 +182,7 @@ make serve      # starts the API server
 | `positive_amount` | `amount` | Must be > 0 | `non_positive_amount` |
 | `latest_order_record` | `order_id` | Dedup, keep newest | `stale_duplicate` |
 
-Rules are defined declaratively in `data/quality_rules.json` and enforced as chained PySpark `WHEN` expressions. Failed rows land in a rejected DataFrame with a `rejection_reason` label, accessible at `/api/runtime/quality-report`. Rejected rows are never discarded -- they form a architecture queue for data engineers to audit upstream quality issues.
+Rules are defined declaratively in `data/quality_rules.json` and enforced as chained PySpark `WHEN` expressions. Failed rows land in a rejected DataFrame with a `rejection_reason` label, accessible at `/api/runtime/quality-report`. Rejected rows are never discarded -- they form an architecture queue for data engineers to audit upstream quality issues.
 
 Gold aggregates accepted silver rows by region into KPI columns: `gross_revenue_usd`, `accepted_orders`, `completed_orders`, `pipeline_orders`, `distinct_customers`.
 

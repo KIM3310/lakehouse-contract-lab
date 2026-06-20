@@ -65,7 +65,7 @@ When a row fails a quality gate at the bronze-to-silver boundary:
 
 ## Rejected Row Architecture Queue
 
-Rejected rows are not discarded. They form a architecture queue that allows data engineers and analysts to:
+Rejected rows are not discarded. They form an architecture queue that allows data engineers and analysts to:
 
 - Identify systematic data quality issues in upstream sources.
 - Quantify the impact of quality violations on downstream KPIs.

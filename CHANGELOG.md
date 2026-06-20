@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bronze, Silver, and Gold medallion pipeline using PySpark and Delta Lake.
 - Four quality gates at the Bronze-to-Silver boundary: `customer_present`, `region_present`, `positive_amount`, `latest_order_record`.
-- Rejected row tracking with labeled rejection reasons routed to a architecture queue.
+- Rejected row tracking with labeled rejection reasons routed to an architecture queue.
 - Delta table output for all three layers with version tracking via `_delta_log`.
 - Gold-layer region KPI aggregation: `gross_revenue_usd`, `accepted_orders`, `completed_orders`, `pipeline_orders`, `distinct_customers`.
 - Snowflake export adapter with MERGE-based upsert logic (`app/snowflake_adapter.py`).
