@@ -66,12 +66,17 @@ LAYER_ARTIFACT_MAP: dict[str, str] = {
 
 
 def _openai_refresh_contract() -> dict[str, Any]:
-    api_key: str = (os.getenv("OPENAI_API_KEY") or "").strip()
+    openrouter_api_key: str = (os.getenv("OPENROUTER_API_KEY") or "").strip()
+    api_key: str = openrouter_api_key or (os.getenv("OPENAI_API_KEY") or "").strip()
     return {
         "deploymentMode": "artifact-refresh-only",
+        "gateway": "openrouter" if openrouter_api_key else "openai",
         "publicLiveApi": False,
         "liveModel": "",
-        "refreshModel": (os.getenv("OPENAI_MODEL_REFRESH") or "gpt-4o").strip(),
+        "refreshModel": (
+            os.getenv("OPENROUTER_MODEL" if openrouter_api_key else "OPENAI_MODEL_REFRESH")
+            or ("openai/gpt-5.4-mini" if openrouter_api_key else "gpt-4o")
+        ).strip(),
         "dailyBudgetUsd": 0.0,
         "monthlyBudgetUsd": 120.0 if api_key else 0.0,
         "killSwitch": False,

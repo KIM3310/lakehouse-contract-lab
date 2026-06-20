@@ -41,8 +41,14 @@ DELTA_DIR: Path = ARTIFACTS_DIR / "runtime_delta"
 DOCS_DIR: Path = ROOT / "docs"
 
 NOW: datetime = datetime.now(timezone.utc).replace(microsecond=0)
-OPENAI_BASE_URL: str = "https://api.openai.com/v1"
-DEFAULT_OPENAI_REFRESH_MODEL: str = "gpt-4o"
+OPENAI_BASE_URL: str = (
+    os.getenv("OPENROUTER_BASE_URL", "").strip() or "https://openrouter.ai/api/v1"
+    if os.getenv("OPENROUTER_API_KEY", "").strip()
+    else "https://api.openai.com/v1"
+)
+DEFAULT_OPENAI_REFRESH_MODEL: str = (
+    "openai/gpt-5.4-mini" if os.getenv("OPENROUTER_API_KEY", "").strip() else "gpt-4o"
+)
 
 SOURCE_ROWS: list[dict[str, Any]] = load_source_rows()
 
@@ -149,7 +155,7 @@ def build_architecture_summary_artifact(
     proof_pack: dict[str, Any],
     quality_report: dict[str, Any],
 ) -> dict[str, Any]:
-    """Build architecture-summary. Uses OpenAI if OPENAI_API_KEY is set, otherwise static fallback."""
+    """Build architecture-summary. Uses OpenRouter/OpenAI if configured, otherwise static fallback."""
     fallback: dict[str, Any] = {
         "schema": "lakehouse-architecture-summary-v1",
         "service": proof_pack["service"],
@@ -173,12 +179,13 @@ def build_architecture_summary_artifact(
             "docs/lakehouse-contract-board.svg",
         ],
     }
-    api_key: str = str(os.getenv("OPENAI_API_KEY", "")).strip()
+    openrouter_api_key = str(os.getenv("OPENROUTER_API_KEY", "")).strip()
+    api_key: str = openrouter_api_key or str(os.getenv("OPENAI_API_KEY", "")).strip()
     if not api_key:
-        logger.info("No OPENAI_API_KEY set; using static fallback for architecture summary")
+        logger.info("No OPENROUTER_API_KEY/OPENAI_API_KEY set; using static fallback for architecture summary")
         return fallback
 
-    logger.info("Requesting OpenAI-enriched architecture summary")
+    logger.info("Requesting OpenRouter/OpenAI-enriched architecture summary")
     schema: dict[str, Any] = {
         "type": "object",
         "additionalProperties": False,
@@ -201,7 +208,8 @@ def build_architecture_summary_artifact(
         f"{OPENAI_BASE_URL}/chat/completions",
         data=json.dumps(
             {
-                "model": str(os.getenv("OPENAI_MODEL_REFRESH", "")).strip() or DEFAULT_OPENAI_REFRESH_MODEL,
+                "model": str(os.getenv("OPENROUTER_MODEL" if openrouter_api_key else "OPENAI_MODEL_REFRESH", "")).strip()
+                or DEFAULT_OPENAI_REFRESH_MODEL,
                 "temperature": 0.2,
                 "response_format": {
                     "type": "json_schema",
@@ -230,6 +238,16 @@ def build_architecture_summary_artifact(
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
+            **(
+                {
+                    "HTTP-Referer": str(os.getenv("OPENROUTER_HTTP_REFERER", "")).strip()
+                    or "https://lakehouse-contract-lab.pages.dev",
+                    "X-OpenRouter-Title": str(os.getenv("OPENROUTER_APP_TITLE", "")).strip()
+                    or "lakehouse-contract-lab",
+                }
+                if openrouter_api_key
+                else {}
+            ),
         },
         method="POST",
     )
