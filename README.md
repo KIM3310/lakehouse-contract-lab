@@ -130,14 +130,16 @@ flowchart LR
 # Clone and set up
 git clone https://github.com/KIM3310/lakehouse-contract-lab.git
 cd lakehouse-contract-lab
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+make install
+
+# If your default python3 is older than 3.11:
+make BOOTSTRAP_PYTHON=/path/to/python3.11 install
 
 # Run the full pipeline: lint, test, build artifacts
 make pipeline
 
 # Start the API server
-uvicorn app.main:app --host 127.0.0.1 --port 8096
+make serve
 open http://127.0.0.1:8096/docs
 ```
 
