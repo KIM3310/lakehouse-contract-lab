@@ -2,10 +2,17 @@
 # Lakehouse Contract Lab - Makefile
 # =============================================================================
 
-.PHONY: install test lint format build smoke smoke-no-build verify docker-build docker-run docker-down pipeline clean help
+.PHONY: check-bootstrap-python install test lint format build smoke smoke-no-build verify docker-build docker-run docker-down pipeline clean help
 
 VENV   := .venv
-BOOTSTRAP_PYTHON ?= python3
+PYTHON_MIN_VERSION := 3.11
+PYTHON_CANDIDATES := python3.13 python3.12 python3.11 python3
+BOOTSTRAP_PYTHON ?= $(shell for py in $(PYTHON_CANDIDATES); do \
+	if command -v $$py >/dev/null 2>&1 && $$py -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1; then \
+		command -v $$py; \
+		break; \
+	fi; \
+done)
 VENV_PY := $(VENV)/bin/python
 PIP    := $(VENV)/bin/pip
 
@@ -17,7 +24,18 @@ help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
-install: ## Create venv and install all dependencies
+check-bootstrap-python:
+	@if [ -z "$(BOOTSTRAP_PYTHON)" ]; then \
+		echo "Python $(PYTHON_MIN_VERSION)+ is required." >&2; \
+		echo "Install Python $(PYTHON_MIN_VERSION)+ or run: make BOOTSTRAP_PYTHON=/path/to/python$(PYTHON_MIN_VERSION) <target>" >&2; \
+		exit 1; \
+	fi
+	@$(BOOTSTRAP_PYTHON) -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' || { \
+		echo "BOOTSTRAP_PYTHON=$(BOOTSTRAP_PYTHON) is not Python $(PYTHON_MIN_VERSION)+." >&2; \
+		exit 1; \
+	}
+
+install: check-bootstrap-python ## Create venv and install all dependencies
 	@if [ ! -x "$(VENV_PY)" ] || ! $(VENV_PY) -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)" >/dev/null 2>&1; then \
 		rm -rf $(VENV); \
 		$(BOOTSTRAP_PYTHON) -m venv $(VENV); \
