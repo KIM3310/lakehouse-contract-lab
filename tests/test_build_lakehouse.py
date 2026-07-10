@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import json
 import sys
+import threading
 import types
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
 from decimal import Decimal
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 import pytest
@@ -328,3 +332,78 @@ class TestUtilities:
         (log_dir / "00000000000000000001.json").write_text("{}")
         (log_dir / "00000000000000000002.json").write_text("{}")
         assert bla.latest_delta_version(table) == 2
+
+
+class TestOpenAIRefreshUrlSecurity:
+    def test_default_openrouter_url_is_allowed(self, bla, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("OPENROUTER_API_KEY", "token")
+
+        assert bla.build_openai_chat_completions_url() == "https://openrouter.ai/api/v1/chat/completions"
+
+    def test_rejects_insecure_authorization_host(self, bla, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("OPENAI_API_KEY", "token")
+        monkeypatch.setenv("OPENAI_BASE_URL", "http://api.openai.com/v1")
+
+        with pytest.raises(ValueError, match="HTTPS"):
+            bla.build_openai_chat_completions_url()
+
+    def test_custom_authorization_host_requires_explicit_opt_in(self, bla, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("OPENAI_API_KEY", "token")
+        monkeypatch.setenv("OPENAI_BASE_URL", "https://llm-gateway.internal/v1")
+
+        with pytest.raises(ValueError, match="ALLOW_CUSTOM_OPENAI_HOST"):
+            bla.build_openai_chat_completions_url()
+
+    def test_custom_authorization_host_opt_in_allows_https_host(self, bla, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("OPENAI_API_KEY", "token")
+        monkeypatch.setenv("OPENAI_BASE_URL", "https://llm-gateway.internal/v1")
+        monkeypatch.setenv("ALLOW_CUSTOM_OPENAI_HOST", "true")
+
+        assert bla.build_openai_chat_completions_url() == "https://llm-gateway.internal/v1/chat/completions"
+
+    def test_authorization_request_does_not_follow_cross_origin_redirect(self, bla) -> None:
+        target_requests: list[str | None] = []
+
+        class TargetHandler(BaseHTTPRequestHandler):
+            def do_GET(self) -> None:
+                target_requests.append(self.headers.get("Authorization"))
+                self.send_response(200)
+                self.end_headers()
+
+            def log_message(self, *_args: object) -> None:
+                return None
+
+        target = HTTPServer(("127.0.0.1", 0), TargetHandler)
+        target_thread = threading.Thread(target=target.serve_forever, daemon=True)
+        target_thread.start()
+
+        class RedirectHandler(BaseHTTPRequestHandler):
+            def do_POST(self) -> None:
+                self.send_response(302)
+                self.send_header("Location", f"http://127.0.0.1:{target.server_port}/leak")
+                self.end_headers()
+
+            def log_message(self, *_args: object) -> None:
+                return None
+
+        redirector = HTTPServer(("127.0.0.1", 0), RedirectHandler)
+        redirect_thread = threading.Thread(target=redirector.serve_forever, daemon=True)
+        redirect_thread.start()
+        try:
+            request = urllib.request.Request(
+                f"http://127.0.0.1:{redirector.server_port}/chat/completions",
+                data=b"{}",
+                headers={"Authorization": "Bearer secret-token"},
+                method="POST",
+            )
+
+            with pytest.raises(urllib.error.HTTPError) as exc_info:
+                bla.open_no_redirect(request, timeout=2)
+
+            assert exc_info.value.code == 302
+            assert target_requests == []
+        finally:
+            redirector.shutdown()
+            redirector.server_close()
+            target.shutdown()
+            target.server_close()

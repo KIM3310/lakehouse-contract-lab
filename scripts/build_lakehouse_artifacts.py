@@ -8,6 +8,7 @@ import os
 import shutil
 import subprocess
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -46,11 +47,48 @@ OPENAI_BASE_URL: str = (
     if os.getenv("OPENROUTER_API_KEY", "").strip()
     else "https://api.openai.com/v1"
 )
-DEFAULT_OPENAI_REFRESH_MODEL: str = (
-    "openai/gpt-5.4-mini" if os.getenv("OPENROUTER_API_KEY", "").strip() else "gpt-4o"
-)
+DEFAULT_OPENAI_REFRESH_MODEL: str = "openai/gpt-5.4-mini" if os.getenv("OPENROUTER_API_KEY", "").strip() else "gpt-4o"
+AUTHORIZED_LLM_HOSTS = {"api.openai.com", "openrouter.ai"}
 
 SOURCE_ROWS: list[dict[str, Any]] = load_source_rows()
+
+
+class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[no-untyped-def]
+        return None
+
+
+def open_no_redirect(request: urllib.request.Request, *, timeout: float) -> Any:
+    opener = urllib.request.build_opener(NoRedirectHandler)
+    return opener.open(request, timeout=timeout)
+
+
+def _env_flag(name: str) -> bool:
+    return str(os.getenv(name, "")).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _llm_base_url(openrouter_api_key: str) -> str:
+    if openrouter_api_key:
+        return os.getenv("OPENROUTER_BASE_URL", "").strip() or "https://openrouter.ai/api/v1"
+    return os.getenv("OPENAI_BASE_URL", "").strip() or "https://api.openai.com/v1"
+
+
+def build_openai_chat_completions_url() -> str:
+    openrouter_api_key = str(os.getenv("OPENROUTER_API_KEY", "")).strip()
+    base_url = _llm_base_url(openrouter_api_key).rstrip("/")
+    parsed = urllib.parse.urlsplit(base_url)
+    host = (parsed.hostname or "").lower().rstrip(".")
+    if parsed.scheme != "https":
+        raise ValueError("OpenAI/OpenRouter Authorization calls must use HTTPS")
+    if parsed.username or parsed.password:
+        raise ValueError("OpenAI/OpenRouter base URL must not contain userinfo")
+    if not host:
+        raise ValueError("OpenAI/OpenRouter base URL must include a host")
+    if parsed.port is not None:
+        raise ValueError("OpenAI/OpenRouter base URL must not include a port")
+    if host not in AUTHORIZED_LLM_HOSTS and not _env_flag("ALLOW_CUSTOM_OPENAI_HOST"):
+        raise ValueError("Custom OpenAI/OpenRouter hosts require ALLOW_CUSTOM_OPENAI_HOST=true")
+    return urllib.parse.urlunsplit((parsed.scheme, host, f"{parsed.path.rstrip('/')}/chat/completions", "", ""))
 
 
 def ensure_java_home() -> None:
@@ -204,11 +242,19 @@ def build_architecture_summary_artifact(
             "nextAction",
         ],
     }
+    try:
+        chat_completions_url = build_openai_chat_completions_url()
+    except ValueError as exc:
+        logger.warning("OpenAI architecture-summary refresh disabled by URL policy (%s); using static fallback", exc)
+        return fallback
+
     request = urllib.request.Request(
-        f"{OPENAI_BASE_URL}/chat/completions",
+        chat_completions_url,
         data=json.dumps(
             {
-                "model": str(os.getenv("OPENROUTER_MODEL" if openrouter_api_key else "OPENAI_MODEL_REFRESH", "")).strip()
+                "model": str(
+                    os.getenv("OPENROUTER_MODEL" if openrouter_api_key else "OPENAI_MODEL_REFRESH", "")
+                ).strip()
                 or DEFAULT_OPENAI_REFRESH_MODEL,
                 "temperature": 0.2,
                 "response_format": {
@@ -252,7 +298,8 @@ def build_architecture_summary_artifact(
         method="POST",
     )
     try:
-        with urllib.request.urlopen(request, timeout=20) as response:
+        # URL is HTTPS and host-allowlisted before Authorization is attached.
+        with open_no_redirect(request, timeout=20) as response:  # nosec B310
             body: dict[str, Any] = json.loads(response.read().decode("utf-8"))
         content: str = str(((body.get("choices") or [{}])[0].get("message") or {}).get("content") or "").strip()
         parsed: dict[str, str] = json.loads(content)
@@ -280,7 +327,9 @@ def build_architecture_summary_artifact(
         TypeError,
         ValueError,
     ) as exc:
-        logger.warning("OpenAI architecture-summary refresh failed (%s: %s); using static fallback", type(exc).__name__, exc)
+        logger.warning(
+            "OpenAI architecture-summary refresh failed (%s: %s); using static fallback", type(exc).__name__, exc
+        )
         return fallback
 
 
@@ -545,7 +594,7 @@ def main() -> None:
         "snowflakeFit": {
             "whyItMatters": (
                 "Shows contract-first medallion thinking, governed KPI outputs, and "
-                "handoff-friendly architecture assets for solution engineering conversations."
+                "handoff-friendly review assets for solution engineering conversations."
             ),
             "architecturePath": [
                 "/api/runtime/lakehouse-proof-pack",
@@ -649,7 +698,9 @@ def main() -> None:
 
     write_json(ARTIFACTS_DIR / "lakehouse-proof-pack.json", proof_pack)
     write_json(ARTIFACTS_DIR / "quality-report.json", quality_report)
-    write_json(ARTIFACTS_DIR / "architecture-summary.json", build_architecture_summary_artifact(proof_pack, quality_report))
+    write_json(
+        ARTIFACTS_DIR / "architecture-summary.json", build_architecture_summary_artifact(proof_pack, quality_report)
+    )
     write_json(
         ARTIFACTS_DIR / "source-pack.json",
         {

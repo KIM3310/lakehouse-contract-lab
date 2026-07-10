@@ -61,18 +61,18 @@ When a row fails a quality gate at the bronze-to-silver boundary:
    - A `rejectedPreview` array showing the first 10 rejected rows with their order details and rejection reasons.
    - Summary statistics: `acceptedRows`, `failedRows`, `qualityPassRatePct`.
 
-5. **API exposure:** Rejected row data is accessible at `/api/runtime/quality-report` for programmatic architecture.
+5. **API exposure:** Rejected row data is accessible at `/api/runtime/quality-report` for programmatic review.
 
-## Rejected Row Architecture Queue
+## Rejected Row Review Queue
 
-Rejected rows are not discarded. They form an architecture queue that allows data engineers and analysts to:
+Rejected rows are not discarded. They form a review queue that allows data engineers and analysts to:
 
 - Identify systematic data quality issues in upstream sources.
 - Quantify the impact of quality violations on downstream KPIs.
 - Trace specific rejected rows back to their source by `order_id`.
 - Audit the pipeline's quality gate decisions.
 
-The architecture queue is surfaced through:
+The review queue is surfaced through:
 - `artifacts/quality-report.json` -- the `rejectedPreview` field.
 - `/api/runtime/quality-report` -- the API endpoint serving the same data.
 - `artifacts/architecture-summary.json` -- a high-level summary of pipeline health.

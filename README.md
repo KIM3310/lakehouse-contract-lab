@@ -3,7 +3,7 @@
 ## Live Demo
 
 - [Open the public GitHub Pages demo](https://kim3310.github.io/lakehouse-contract-lab/)
-- Scope: credential-free, synthetic-data demo for architecture inspection and evaluators.
+- Scope: credential-free, synthetic-data demo for data-contract review and evaluators.
 
 [![CI](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/KIM3310/lakehouse-contract-lab/branch/main/graph/badge.svg)](https://codecov.io/gh/KIM3310/lakehouse-contract-lab)
@@ -15,31 +15,31 @@ A production-grade **Spark + Delta Lake** medallion pipeline that enforces data 
 
 ---
 
-## Product and System Surface
+## System Overview
 
-A contract-first data lab that turns data quality from a slide into a repeatable pipeline and architecture artifact.
+A contract-first data lab that turns data quality from a slide into a repeatable pipeline and review artifact.
 
-| Lens | Definition |
+| Area | Details |
 |---|---|
-| Audience | Data platform teams, BI teams, analytics engineers, and migration leaders. |
-| Architecture path | Validate the demo, README, architecture notes, and quality gate before deeper workflow architecture. |
-| System signal | Spark/Delta-style medallion pipeline, quality gates, warehouse export, contracts, and architecture-pack framing. |
-| Safety boundary | Fixture data proves behavior; production use needs source-system contracts, ownership, lineage, and access policy. |
-| Fast path | Run the pytest/ruff pipeline and inspect generated quality reports and contract outputs. |
+| Users | Data platform teams, BI teams, analytics engineers, and migration leaders. |
+| Technical path | Validate the demo, README, architecture notes, and quality gate before deeper workflow review. |
+| System scope | Spark/Delta-style medallion pipeline, quality gates, warehouse export, contracts, and architecture-pack framing. |
+| Operating boundary | Fixture data proves behavior; production use needs source-system contracts, ownership, lineage, and access policy. |
+| Evaluation path | Run the pytest/ruff pipeline and inspect generated quality reports and contract outputs. |
 
-## System Fast Path
+## Evaluation Path
 
-- **First minute:** Inspect the contract checks, quality reports, and medallion layer artifacts before deployment notes.
-- **Local demo:** Run `make smoke-no-build` for API architecture, then open `http://127.0.0.1:8096/docs`.
-- **Verification:** Run `make verify`; CI uses prebuilt artifact validation when a Spark/Java runtime is unavailable.
+- **Start here:** Inspect the contract checks, quality reports, and medallion layer artifacts before deployment notes.
+- **Local smoke check:** Run `make smoke-no-build` to exercise the API transiently on port `8097`. For interactive docs, run `make serve` and open `http://127.0.0.1:8096/docs`.
+- **Checks:** Run `make verify`; CI uses prebuilt artifact validation when a Spark/Java runtime is unavailable.
 
 ## Service Launch Playbook
 
-- [Service launch playbook](docs/service-launch-playbook.md) maps the repository to architecture audiences, operating gates, operating boundaries, and risk controls.
+- [Service launch playbook](docs/service-launch-playbook.md) maps the repository to its product scope, operating gates, operating boundaries, and risk controls.
 
 ## Architecture Notes
 
-- [Architecture guide](docs/architecture-evidence-map.md) summarizes the project angle, first files to inspect, runtime commands, and known boundaries.
+- [Architecture guide](docs/architecture-evidence-map.md) summarizes the system scope, first files to inspect, runtime commands, and known boundaries.
 - [Quality notes](docs/quality-gate.md) lists the local checks, CI surface, and release expectations for this repository.
 - [Enterprise readiness notes](docs/enterprise-readiness.md) outlines security, data, operations, integration, and handoff expectations.
 
@@ -59,7 +59,7 @@ flowchart LR
     subgraph Silver["Silver Layer"]
         GATES{"Quality Gates<br/>4 rules"}
         S_TABLE[("silver_orders<br/>Delta Table")]
-        REJECTED[/"Rejected Rows<br/>Architecture Queue"/]
+        REJECTED[/"Rejected Rows<br/>Review Queue"/]
         S_CONTRACT["Contract:<br/>- customer_id NOT NULL<br/>- region NOT NULL<br/>- amount > 0<br/>- Dedup by order_id"]
     end
 
@@ -99,8 +99,8 @@ flowchart LR
 | Dimension | Details |
 |-----------|---------|
 | **Primary architecture lane** | Data contracts, analytics platform operations, and lakehouse export reliability |
-| **Strongest proof** | Medallion pipeline structure, quality gates, export adapters, and architecture-readable runtime APIs |
-| **What is real** | Spark transforms, rejection logic, KPI rollups, Snowflake MERGE export logic, Databricks export bridges, local architecture surfaces |
+| **Strongest proof** | Medallion pipeline structure, quality gates, export adapters, and reviewer-readable runtime APIs |
+| **What is real** | Spark transforms, rejection logic, KPI rollups, Snowflake MERGE export logic, Databricks export bridges, local review surfaces |
 | **What is bounded** | Live Snowflake and Databricks exports only activate when credentials are configured; the seeded business dataset is synthetic |
 
 ---
@@ -184,7 +184,7 @@ make serve      # starts the API server
 | `positive_amount` | `amount` | Must be > 0 | `non_positive_amount` |
 | `latest_order_record` | `order_id` | Dedup, keep newest | `stale_duplicate` |
 
-Rules are defined declaratively in `data/quality_rules.json` and enforced as chained PySpark `WHEN` expressions. Failed rows land in a rejected DataFrame with a `rejection_reason` label, accessible at `/api/runtime/quality-report`. Rejected rows are never discarded -- they form an architecture queue for data engineers to audit upstream quality issues.
+Rules are defined declaratively in `data/quality_rules.json` and enforced as chained PySpark `WHEN` expressions. Failed rows land in a rejected DataFrame with a `rejection_reason` label, accessible at `/api/runtime/quality-report`. Rejected rows are never discarded -- they form a review queue for data engineers to investigate upstream quality issues.
 
 Gold aggregates accepted silver rows by region into KPI columns: `gross_revenue_usd`, `accepted_orders`, `completed_orders`, `pipeline_orders`, `distinct_customers`.
 
@@ -200,7 +200,7 @@ Gold aggregates accepted silver rows by region into KPI columns: `gross_revenue_
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/health` | Service health with architecture-artifact links |
+| `GET` | `/health` | Service health with quality-artifact links |
 | `GET` | `/api/runtime/quality-report` | Data quality gate results with rejected row preview |
 | `GET` | `/api/runtime/table-captures/{layer}` | Layer preview: `bronze` / `silver` / `gold` |
 | `GET` | `/api/runtime/pipeline-summary` | Pipeline metrics across all three layers |
@@ -274,15 +274,13 @@ MIT
 
 ## Cloud + AI Architecture
 
-This repository includes a neutral cloud and AI engineering blueprint that maps the current proof surface to runtime boundaries, data contracts, model-risk controls, deployment posture, and validation hooks.
-
 - [Cloud + AI architecture blueprint](docs/cloud-ai-architecture.md)
 - [Machine-readable architecture manifest](docs/architecture/blueprint.json)
 - Validation command: `python3 scripts/validate_architecture_blueprint.py`
 
 ## Enterprise Productization
 
-- [Product operating model](docs/product-operating-model.md) defines the technical inspection, trust boundary, trust boundary, operating checks, and service path for this repository.
+- [Product operating model](docs/product-operating-model.md) defines the product scope, trust boundary, operating checks, and service path for this repository.
 
 ## System Architecture
 

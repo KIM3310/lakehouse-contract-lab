@@ -3,10 +3,10 @@
 ## Public Demo
 
 - URL: https://kim3310.github.io/lakehouse-contract-lab/
-- Scope: credential-free synthetic demo surface for quick technical inspection inspection.
+- Scope: credential-free synthetic demo surface for quick data platform review.
 
 Repository: `lakehouse-contract-lab`
-Last updated: 2026-06-03 KST
+Last reviewed: 2026-06-03 KST
 
 ## Enterprise Product Position
 
