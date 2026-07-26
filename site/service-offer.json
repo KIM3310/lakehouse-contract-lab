@@ -69,5 +69,29 @@
     ],
     "isAccessibleForFree": true,
     "keywords": "lakehouse-contract-lab, Lakehouse, Contract, Lab, lakehouse, contract, compiler, quality, gate, artifact, builder, export, adapter, lab, connector, templates, migration, pack, recurring, data, synthetic, pipeline"
+  },
+  "commerce": {
+    "gateway_url": "https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab#service-offers",
+    "lane_id": "nexus-data-contract-lab",
+    "lane_name": "Nexus Data Contract Lab",
+    "billing_mode": "quote",
+    "price_unit": "scope-before-invoice for connector, warehouse, and audit-export work",
+    "fulfillment_kind": "connector readiness map, data-quality contract pack, export boundary, and migration report",
+    "risk_bucket": "data-high-trust",
+    "checkout": {
+      "provider": "lemon-squeezy",
+      "status": "account-onboarding-required",
+      "fallback_url": "https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab#service-offers"
+    },
+    "sponsorship": {
+      "provider": "github-sponsors",
+      "eligible": true,
+      "status": "account-onboarding-required"
+    },
+    "advertising": {
+      "provider": null,
+      "eligible": false,
+      "status": "not-applicable"
+    }
   }
 }
