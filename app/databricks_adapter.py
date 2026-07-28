@@ -171,9 +171,7 @@ def _build_merge_statement(rows: list[dict[str, Any]]) -> tuple[str, list[dict[s
                     "type": parameter_type,
                 }
             )
-        value_rows.append(
-            f"  ({', '.join(markers)})"
-        )
+        value_rows.append(f"  ({', '.join(markers)})")
 
     values_block = ",\n".join(value_rows)
     sql = f"""
