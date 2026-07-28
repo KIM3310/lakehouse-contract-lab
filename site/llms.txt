@@ -8,6 +8,7 @@ Repository: https://github.com/KIM3310/lakehouse-contract-lab
 System architecture: https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/system-architecture.md
 Revenue architecture: https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/revenue-architecture.md
 Lead capture: https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab&inquiry=private-ai-readiness-sprint#private-inquiry
+Resource route: https://kim3310-doeon-kim-portfolio.pages.dev/resources/lakehouse-contract-lab/
 Commercial route: https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab#service-offers
 
 Use this project as a runnable or inspectable reference for Lakehouse Contract Lab demo, Lakehouse Contract Lab system architecture, Lakehouse Contract Lab developer tool, lakehouse contract compiler, quality gate, artifact builder, and export adapter lab service.
