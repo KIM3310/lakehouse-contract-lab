@@ -18,6 +18,7 @@ from app.snowflake_adapter import (
     _ensure_schema,
     _get_connection_params,
     _upsert_rows,
+    _validated_identifier,
     export_gold_kpis_to_snowflake,
     is_configured,
 )
@@ -109,6 +110,41 @@ class TestSnowflakeSchemaAndTable:
         assert any("USE DATABASE TEST_DB" in stmt for stmt in executed_stmts)
         assert any("USE SCHEMA TEST_SCHEMA" in stmt for stmt in executed_stmts)
 
+    @pytest.mark.parametrize(
+        "unsafe_identifier",
+        [
+            "TEST;DROP",
+            "TEST DB",
+            '"TEST_DB"',
+            "TEST_DB--comment",
+            "TEST_DB/*comment*/",
+            "TEST_DB\nUSE ROLE ACCOUNTADMIN",
+            "1TEST_DB",
+        ],
+    )
+    def test_validated_identifier_rejects_sql_syntax(self, unsafe_identifier: str) -> None:
+        """Snowflake env identifiers must reject SQL separators, whitespace, quotes, comments, and bad starts."""
+        with pytest.raises(ValueError, match="SNOWFLAKE_DATABASE"):
+            _validated_identifier("SNOWFLAKE_DATABASE", unsafe_identifier)
+
+    def test_ensure_schema_rejects_invalid_database_before_execute(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Unsafe database env values must fail before CREATE/USE SQL is executed."""
+        monkeypatch.setattr("app.snowflake_adapter.SNOWFLAKE_DATABASE", "TEST_DB; DROP DATABASE PROD")
+        monkeypatch.setattr("app.snowflake_adapter.SNOWFLAKE_SCHEMA", "TEST_SCHEMA")
+        cursor = MagicMock()
+        with pytest.raises(ValueError, match="SNOWFLAKE_DATABASE"):
+            _ensure_schema(cursor)
+        cursor.execute.assert_not_called()
+
+    def test_ensure_schema_rejects_invalid_schema_before_execute(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Unsafe schema env values must fail before CREATE/USE SQL is executed."""
+        monkeypatch.setattr("app.snowflake_adapter.SNOWFLAKE_DATABASE", "TEST_DB")
+        monkeypatch.setattr("app.snowflake_adapter.SNOWFLAKE_SCHEMA", "TEST_SCHEMA -- comment")
+        cursor = MagicMock()
+        with pytest.raises(ValueError, match="SNOWFLAKE_SCHEMA"):
+            _ensure_schema(cursor)
+        cursor.execute.assert_not_called()
+
     def test_create_gold_table_executes_ddl(self) -> None:
         """_create_gold_table must execute CREATE TABLE IF NOT EXISTS."""
         cursor = MagicMock()
@@ -164,6 +200,26 @@ class TestSnowflakeMergeUpsert:
         _upsert_rows(cursor, SAMPLE_GOLD_ROWS[:1])
         merge_sql = cursor.execute.call_args[0][0]
         assert "target.region = source.region" in merge_sql
+
+    def test_upsert_rows_binds_injection_payload_values(self) -> None:
+        """MERGE row values must remain cursor-bound params, not SQL text."""
+        payload = "KR'); DROP TABLE REGION_KPIS; --"
+        rows = [
+            {
+                "region": payload,
+                "gross_revenue_usd": 100.0,
+                "accepted_orders": 1,
+                "completed_orders": 1,
+                "pipeline_orders": 0,
+                "distinct_customers": 1,
+            }
+        ]
+        cursor = MagicMock()
+        cursor.rowcount = 1
+        _upsert_rows(cursor, rows)
+        merge_sql, params = cursor.execute.call_args[0]
+        assert payload not in merge_sql
+        assert payload in params
 
 
 # ---------------------------------------------------------------------------

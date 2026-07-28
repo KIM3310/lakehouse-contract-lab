@@ -99,16 +99,20 @@ def _resolve_warehouse_id(client: Any) -> str:
     return str(warehouse_id)
 
 
-def _execute_sql(client: Any, sql: str) -> Any:
+def _execute_sql(client: Any, sql: str, parameters: list[dict[str, str]] | None = None) -> Any:
     warehouse_id = _resolve_warehouse_id(client)
     settings = _settings()
-    response = client.statement_execution.execute_statement(
-        warehouse_id=warehouse_id,
-        statement=sql,
-        catalog=settings["catalog"],
-        schema=settings["schema"],
-        wait_timeout="30s",
-    )
+    statement_args: dict[str, Any] = {
+        "warehouse_id": warehouse_id,
+        "statement": sql,
+        "catalog": settings["catalog"],
+        "schema": settings["schema"],
+        "wait_timeout": "30s",
+    }
+    if parameters is not None:
+        statement_args["parameters"] = parameters
+
+    response = client.statement_execution.execute_statement(**statement_args)
     if _state_value(response) != "SUCCEEDED":
         raise RuntimeError(_statement_error_message(response))
     return response
@@ -143,19 +147,36 @@ def _build_create_table_sql() -> str:
     """
 
 
-def _build_merge_sql(rows: list[dict[str, Any]]) -> str:
+def _build_merge_statement(rows: list[dict[str, Any]]) -> tuple[str, list[dict[str, str]]]:
     table = _get_full_table_name()
     value_rows: list[str] = []
-    for row in rows:
-        region = str(row["region"]).replace("'", "''")
+    parameters: list[dict[str, str]] = []
+    parameter_specs = (
+        ("region", "STRING", str),
+        ("gross_revenue_usd", "DOUBLE", float),
+        ("accepted_orders", "BIGINT", int),
+        ("completed_orders", "BIGINT", int),
+        ("pipeline_orders", "BIGINT", int),
+        ("distinct_customers", "BIGINT", int),
+    )
+    for index, row in enumerate(rows):
+        markers: list[str] = []
+        for column_name, parameter_type, caster in parameter_specs:
+            parameter_name = f"{column_name}_{index}"
+            markers.append(f":{parameter_name}")
+            parameters.append(
+                {
+                    "name": parameter_name,
+                    "value": str(caster(row[column_name])),
+                    "type": parameter_type,
+                }
+            )
         value_rows.append(
-            f"  ('{region}', {float(row['gross_revenue_usd'])}, "
-            f"{int(row['accepted_orders'])}, {int(row['completed_orders'])}, "
-            f"{int(row['pipeline_orders'])}, {int(row['distinct_customers'])})"
+            f"  ({', '.join(markers)})"
         )
 
     values_block = ",\n".join(value_rows)
-    return f"""
+    sql = f"""
     MERGE INTO {table} AS target
     USING (
         SELECT * FROM (
@@ -179,17 +200,23 @@ def _build_merge_sql(rows: list[dict[str, Any]]) -> str:
         source.region, source.gross_revenue_usd, source.accepted_orders,
         source.completed_orders, source.pipeline_orders, source.distinct_customers, current_timestamp()
     )
-    """
+    """  # nosec B608
+    return sql, parameters
+
+
+def _build_merge_sql(rows: list[dict[str, Any]]) -> str:
+    sql, _ = _build_merge_statement(rows)
+    return sql
 
 
 def query_region_kpis(limit: int = 20) -> list[dict[str, Any]]:
     if not is_configured():
         return []
     client = _build_workspace_client()
+    safe_limit = max(1, min(int(limit), 1000))
     response = _execute_sql(
         client,
-        f"SELECT region, gross_revenue_usd, accepted_orders, completed_orders, pipeline_orders, distinct_customers, loaded_at "
-        f"FROM {_get_full_table_name()} ORDER BY region LIMIT {max(1, min(limit, 1000))}",
+        f"SELECT region, gross_revenue_usd, accepted_orders, completed_orders, pipeline_orders, distinct_customers, loaded_at FROM {_get_full_table_name()} ORDER BY region LIMIT {safe_limit}",  # nosec B608
     )
     schema = getattr(getattr(response, "manifest", None), "schema", None)
     columns = [column.name.lower() for column in getattr(schema, "columns", [])]
@@ -218,7 +245,8 @@ def export_gold_kpis_to_databricks(rows: list[dict[str, Any]]) -> bool:
         client = _build_workspace_client()
         _ensure_schema(client)
         _execute_sql(client, _build_create_table_sql())
-        _execute_sql(client, _build_merge_sql(rows))
+        merge_sql, merge_parameters = _build_merge_statement(rows)
+        _execute_sql(client, merge_sql, merge_parameters)
         logger.info("Upserted %d gold KPI rows into Databricks Unity Catalog", len(rows))
         return True
     except Exception:

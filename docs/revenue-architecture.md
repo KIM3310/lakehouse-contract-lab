@@ -8,10 +8,11 @@ This document turns the repository architecture into a zero-to-low-cost service 
 | --- | --- |
 | Target buyer / user | data platform owner needing lightweight data contract and quality gates before warehouse consumption |
 | Productized offer | lakehouse contract compiler, quality gate, artifact builder, and export adapter lab |
-| First paid SKU | paid connector templates, contract migration pack, and recurring data quality report |
+| First paid SKU | quoted private AI readiness sprint for lakehouse contract migration and quality reporting scope |
 | Free lead magnet | free synthetic pipeline and contract examples |
-| Paid expansion | connector setup, private rule authoring, and hosted data-contract dashboard |
+| Paid expansion | connector setup, private rule authoring, and hosted data-contract dashboard only after scoped readiness work |
 | Data / workflow moat | quality rule catalog, contract diffs, rejected-row traces, and export target histories |
+| Private inquiry | https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab&inquiry=private-ai-readiness-sprint#private-inquiry |
 
 ## Free-Tier-First Launch Stack
 
@@ -37,7 +38,7 @@ flowchart LR
   Meter --> Core["Repository core workflow"]
   Core --> AI["Free or customer-key AI inference"]
   Core --> Export["Reports, traces, bundles, or templates"]
-  Export --> Upgrade["Paid SKU: private workspace / support / connector / export pack"]
+  Export --> Upgrade["Paid inquiry: private AI readiness sprint"]
   Upgrade --> Retention["Saved history, private data, team controls, and recurring reports"]
 ```
 
@@ -51,10 +52,10 @@ flowchart LR
 
 ## 30-Day Revenue Test
 
-1. Publish the public demo or architecture page with one clear CTA: request private workspace, download a pack, or run a sample report.
-2. Add a lead capture route using Workers + D1/KV, Supabase, Firebase, or a GitHub issue form.
+1. Publish the public demo or architecture page with one clear CTA: request private readiness scoping.
+2. Route leads to the central private inquiry lane before adding checkout or payment infrastructure.
 3. Create one downloadable artifact: report PDF, template pack, runbook, dataset sample, or export bundle.
-4. Offer a fixed-scope paid package before building subscription complexity.
+4. Offer a fixed-scope readiness sprint before building subscription complexity.
 5. Track activation manually first: visits, CTA clicks, export requests, email replies, and paid pilot conversations.
 
 ## Cost Guardrails
@@ -69,9 +70,9 @@ flowchart LR
 
 The paid version should not be a different product. It should unlock more trust, privacy, retention, and operational surface area:
 
-- private workspace or local deployment
+- private workspace or local deployment after scope is approved
 - saved history and longer retention
 - branded exports or signed evidence bundles
 - connector setup for the customer's systems
 - team roles, audit logs, and admin controls
-- support or implementation package tied to a concrete outcome
+- support or implementation package tied to a documented readiness outcome

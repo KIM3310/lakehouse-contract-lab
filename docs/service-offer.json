@@ -5,9 +5,9 @@
   "repository_url": "https://github.com/KIM3310/lakehouse-contract-lab",
   "architecture_url": "https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/system-architecture.md",
   "revenue_architecture_url": "https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/revenue-architecture.md",
-  "lead_capture_url": "https://github.com/KIM3310/lakehouse-contract-lab/issues/new?template=service-inquiry.yml&title=Private+workspace+inquiry%3A+Lakehouse+Contract+Lab",
+  "lead_capture_url": "https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab&inquiry=private-ai-readiness-sprint#private-inquiry",
   "productized_offer": "lakehouse contract compiler, quality gate, artifact builder, and export adapter lab",
-  "first_paid_sku": "paid connector templates, contract migration pack, and recurring data quality report",
+  "first_paid_sku": "quoted private AI readiness sprint for lakehouse contract migration and quality reporting scope",
   "free_lead_magnet": "free synthetic pipeline and contract examples",
   "search_positioning": {
     "primary_query": "Lakehouse Contract Lab compiler quality gate",
@@ -21,7 +21,7 @@
   },
   "monetization_boundary": {
     "free": "free synthetic pipeline and contract examples",
-    "paid": "paid connector templates, contract migration pack, and recurring data quality report",
+    "paid": "quoted private AI readiness sprint for lakehouse contract migration and quality reporting scope",
     "metering_hooks": [
       "workspace_id",
       "plan",
@@ -45,7 +45,7 @@
     "operatingSystem": "Web, serverless, and local development environments",
     "url": "https://kim3310.github.io/lakehouse-contract-lab/",
     "codeRepository": "https://github.com/KIM3310/lakehouse-contract-lab",
-    "description": "Lakehouse Contract Lab: lakehouse contract compiler, quality gate, artifact builder, and export adapter lab. Free entry point: free synthetic pipeline and contract examples. Paid path: paid connector templates, contract.",
+    "description": "Lakehouse Contract Lab is a public synthetic data-contract pipeline demo. Paid work is a quoted private AI readiness sprint for migration, quality-reporting, connector, and deployment scoping; no self-serve checkout is configured.",
     "creator": {
       "@type": "Person",
       "name": "KIM3310",
@@ -62,30 +62,30 @@
       },
       {
         "@type": "Offer",
-        "name": "paid connector templates, contract migration pack, and recurring data quality report",
+        "name": "quoted private AI readiness sprint for lakehouse contract migration and quality reporting scope",
         "availability": "https://schema.org/LimitedAvailability",
-        "url": "https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/revenue-architecture.md"
+        "url": "https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab&inquiry=private-ai-readiness-sprint#private-inquiry"
       }
     ],
     "isAccessibleForFree": true,
-    "keywords": "lakehouse-contract-lab, Lakehouse, Contract, Lab, lakehouse, contract, compiler, quality, gate, artifact, builder, export, adapter, lab, connector, templates, migration, pack, recurring, data, synthetic, pipeline"
+    "keywords": "lakehouse-contract-lab, Lakehouse, Contract, Lab, lakehouse, contract, compiler, quality, gate, artifact, builder, export, adapter, private AI readiness sprint, migration scoping, quality reporting"
   },
   "commerce": {
     "gateway_url": "https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab#service-offers",
-    "lane_id": "nexus-data-contract-lab",
-    "lane_name": "Nexus Data Contract Lab",
+    "lane_id": "private-ai-readiness-sprint",
+    "lane_name": "Private AI Readiness Sprint",
     "billing_mode": "quote",
-    "price_unit": "scope-before-invoice for connector, warehouse, and audit-export work",
-    "fulfillment_kind": "connector readiness map, data-quality contract pack, export boundary, and migration report",
-    "risk_bucket": "data-high-trust",
+    "price_unit": "typical discovery scope from USD 2,500",
+    "fulfillment_kind": "use-case scorecard, data and policy boundaries, evaluation plan, deployment options, and go or no-go roadmap",
+    "risk_bucket": "high-trust-b2b",
     "checkout": {
-      "provider": "lemon-squeezy",
-      "status": "account-onboarding-required",
-      "fallback_url": "https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab#service-offers"
+      "provider": null,
+      "status": "not-configured",
+      "fallback_url": "https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab&inquiry=private-ai-readiness-sprint#private-inquiry"
     },
     "sponsorship": {
       "provider": "github-sponsors",
-      "eligible": true,
+      "eligible": false,
       "status": "sponsors-listing-not-configured"
     },
     "advertising": {

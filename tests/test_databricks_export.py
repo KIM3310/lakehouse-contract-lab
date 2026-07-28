@@ -15,6 +15,7 @@ import pytest
 from app.databricks_adapter import (
     _build_create_table_sql,
     _build_merge_sql,
+    _build_merge_statement,
     _get_full_table_name,
     _quote,
     _state_value,
@@ -137,7 +138,7 @@ class TestDatabricksSqlGeneration:
         assert "delta.autoOptimize.optimizeWrite" in sql
 
     def test_build_merge_sql_structure(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """MERGE SQL must include USING VALUES, WHEN MATCHED, and WHEN NOT MATCHED."""
+        """MERGE SQL must include parameterized VALUES, WHEN MATCHED, and WHEN NOT MATCHED."""
         monkeypatch.setenv("DATABRICKS_CATALOG", "main")
         monkeypatch.setenv("DATABRICKS_SCHEMA", "lakehouse_lab")
         sql = _build_merge_sql(SAMPLE_GOLD_ROWS)
@@ -145,16 +146,19 @@ class TestDatabricksSqlGeneration:
         assert "target.region = source.region" in sql
         assert "WHEN MATCHED THEN UPDATE" in sql
         assert "WHEN NOT MATCHED THEN INSERT" in sql
-        assert "KR-SEOUL" in sql
-        assert "US-WEST" in sql
+        assert ":region_0" in sql
+        assert ":region_1" in sql
+        assert "KR-SEOUL" not in sql
+        assert "US-WEST" not in sql
 
-    def test_build_merge_sql_escapes_single_quotes(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """MERGE SQL must escape single quotes in region names."""
+    def test_build_merge_statement_binds_injection_payload_values(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """MERGE row values must be bound as parameters instead of interpolated into SQL."""
         monkeypatch.setenv("DATABRICKS_CATALOG", "main")
         monkeypatch.setenv("DATABRICKS_SCHEMA", "lakehouse_lab")
+        payload = "KR'); DROP TABLE region_kpis; --"
         rows = [
             {
-                "region": "O'Brien County",
+                "region": payload,
                 "gross_revenue_usd": 100.0,
                 "accepted_orders": 1,
                 "completed_orders": 1,
@@ -162,8 +166,10 @@ class TestDatabricksSqlGeneration:
                 "distinct_customers": 1,
             }
         ]
-        sql = _build_merge_sql(rows)
-        assert "O''Brien County" in sql
+        sql, parameters = _build_merge_statement(rows)
+        assert payload not in sql
+        assert {"name": "region_0", "value": payload, "type": "STRING"} in parameters
+        assert {"name": "gross_revenue_usd_0", "value": "100.0", "type": "DOUBLE"} in parameters
 
 
 # ---------------------------------------------------------------------------
@@ -259,6 +265,9 @@ class TestDatabricksExportFunction:
 
         # Should have been called for: CREATE CATALOG, CREATE SCHEMA, CREATE TABLE, MERGE
         assert mock_client.statement_execution.execute_statement.call_count == 4
+        merge_call = mock_client.statement_execution.execute_statement.call_args_list[3]
+        assert "KR-SEOUL" not in merge_call.kwargs["statement"]
+        assert {"name": "region_0", "value": "KR-SEOUL", "type": "STRING"} in merge_call.kwargs["parameters"]
 
     @patch("app.databricks_adapter._build_workspace_client")
     def test_export_returns_false_on_statement_failure(

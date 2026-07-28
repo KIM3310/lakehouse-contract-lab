@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,7 @@ SNOWFLAKE_SCHEMA: str = os.getenv("SNOWFLAKE_SCHEMA", "GOLD")
 SNOWFLAKE_ROLE: str = os.getenv("SNOWFLAKE_ROLE", "SYSADMIN")
 
 GOLD_TABLE_NAME: str = "REGION_KPIS"
+_SNOWFLAKE_IDENTIFIER_PATTERN = re.compile(r"[A-Za-z_][A-Za-z0-9_$]{0,254}")
 
 
 def is_configured() -> bool:
@@ -36,15 +38,23 @@ def _get_connection_params() -> dict[str, str]:
     }
 
 
+def _validated_identifier(name: str, value: str) -> str:
+    if not _SNOWFLAKE_IDENTIFIER_PATTERN.fullmatch(value):
+        raise ValueError(f"{name} must be an unquoted Snowflake identifier")
+    return value
+
+
 def _ensure_schema(cursor: Any) -> None:
-    cursor.execute(f"CREATE DATABASE IF NOT EXISTS {SNOWFLAKE_DATABASE}")
-    cursor.execute(f"USE DATABASE {SNOWFLAKE_DATABASE}")
-    cursor.execute(f"CREATE SCHEMA IF NOT EXISTS {SNOWFLAKE_SCHEMA}")
-    cursor.execute(f"USE SCHEMA {SNOWFLAKE_SCHEMA}")
+    database = _validated_identifier("SNOWFLAKE_DATABASE", SNOWFLAKE_DATABASE)
+    schema = _validated_identifier("SNOWFLAKE_SCHEMA", SNOWFLAKE_SCHEMA)
+    cursor.execute("CREATE DATABASE IF NOT EXISTS " + database)
+    cursor.execute("USE DATABASE " + database)
+    cursor.execute("CREATE SCHEMA IF NOT EXISTS " + schema)
+    cursor.execute("USE SCHEMA " + schema)
     logger.info(
         "Ensured Snowflake schema %s.%s exists",
-        SNOWFLAKE_DATABASE,
-        SNOWFLAKE_SCHEMA,
+        database,
+        schema,
     )
 
 
@@ -110,7 +120,7 @@ def _upsert_rows(cursor: Any, rows: list[dict[str, Any]]) -> int:
         source.region, source.gross_revenue_usd, source.accepted_orders,
         source.completed_orders, source.pipeline_orders, source.distinct_customers
     )
-    """
+    """  # nosec B608
     cursor.execute(merge_sql, params)
     affected: int = cursor.rowcount or len(rows)
     logger.info("Upserted %d gold KPI rows into Snowflake", affected)

@@ -10,7 +10,7 @@ This repository now exposes a search-readable service surface in addition to the
 | Revenue architecture | [docs/revenue-architecture.md](./revenue-architecture.md) |
 | System architecture | [docs/system-architecture.md](./system-architecture.md) |
 | Public canonical URL | https://kim3310.github.io/lakehouse-contract-lab/ |
-| Lead capture URL | https://github.com/KIM3310/lakehouse-contract-lab/issues/new?template=service-inquiry.yml&title=Private+workspace+inquiry%3A+Lakehouse+Contract+Lab |
+| Lead capture URL | https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab&inquiry=private-ai-readiness-sprint#private-inquiry |
 | Commercial route | https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab#service-offers |
 
 ## Search Positioning
@@ -18,15 +18,15 @@ This repository now exposes a search-readable service surface in addition to the
 - Primary query: Lakehouse Contract Lab compiler quality gate
 - Secondary queries: Lakehouse Contract Lab demo; Lakehouse Contract Lab system architecture; Lakehouse Contract Lab developer tool; lakehouse contract compiler, quality gate, artifact builder, and export adapter lab service
 - Public entry point: free synthetic pipeline and contract examples
-- Paid boundary: paid connector templates, contract migration pack, and recurring data quality report
+- Paid boundary: quoted private AI readiness sprint for lakehouse contract migration and quality reporting scope
 
 ## Conversion Boundary
 
-The public surface stays crawlable and free. Paid value starts when a visitor wants private data, saved history, branded export packs, customer-specific connectors, recurring reports, or implementation support.
+The public surface stays crawlable, free, and synthetic. Paid value starts with a private readiness inquiry for migration feasibility, quality-reporting scope, connector boundaries, deployment options, and implementation support.
 
 ## Deployment Notes
 
 - Keep the sitemap and robots file aligned with the final production domain.
 - Submit the canonical URL and sitemap in Google Search Console after the domain is connected.
-- The lead-capture path is a GitHub Issue Form so private workspace and paid-package requests create a trackable queue before payment infrastructure is added.
+- The lead-capture path is the central private inquiry route with `inquiry=private-ai-readiness-sprint`; do not advertise a live checkout until payment operations are configured.
 - Keep exact free-tier quotas out of public promises because provider limits change.

@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
-A production-grade **Spark + Delta Lake** medallion pipeline that enforces data contracts at every layer boundary, applies declarative quality gates, and exports governed KPIs to **Snowflake** and **Databricks Unity Catalog**. Built as a working reference implementation for contract-first data engineering.
+A runnable **Spark + Delta Lake** medallion pipeline demo that enforces data contracts at layer boundaries, applies declarative quality gates, and frames governed KPI export paths for **Snowflake** and **Databricks Unity Catalog** review. Built as a working reference implementation for contract-first data engineering with synthetic fixture data.
 
 ---
 
@@ -295,9 +295,9 @@ MIT
 ## Search And Service Surface
 
 - Public entry: free synthetic pipeline and contract examples
-- Paid boundary: paid connector templates, contract migration pack, and recurring data quality report
+- Paid boundary: quoted private AI readiness sprint for lakehouse contract migration and quality reporting scope
 - Canonical URL: https://kim3310.github.io/lakehouse-contract-lab/
-- Lead capture: https://github.com/KIM3310/lakehouse-contract-lab/issues/new?template=service-inquiry.yml&title=Private+workspace+inquiry%3A+Lakehouse+Contract+Lab
+- Lead capture: https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab&inquiry=private-ai-readiness-sprint#private-inquiry
 - Commercial route: https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab#service-offers
 - Machine-readable offer: [docs/service-offer.json](docs/service-offer.json)
 - Search growth implementation: [docs/search-growth-implementation.md](docs/search-growth-implementation.md)
