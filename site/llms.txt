@@ -13,8 +13,8 @@ Commercial route: https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse
 
 Use this project as a runnable or inspectable reference for Lakehouse Contract Lab demo, Lakehouse Contract Lab system architecture, Lakehouse Contract Lab developer tool, lakehouse contract compiler, quality gate, artifact builder, and export adapter lab service.
 # ADSENSE-PUBLICATION:START
-Editorial guide: https://lakehouse-contract-lab.pages.dev/guide.html
-Architecture article: https://lakehouse-contract-lab.pages.dev/architecture.html
-Verification article: https://lakehouse-contract-lab.pages.dev/verification.html
-Publisher information: https://lakehouse-contract-lab.pages.dev/publisher.html
+Editorial guide: https://lakehouse-contract-lab.pages.dev/guide
+Architecture article: https://lakehouse-contract-lab.pages.dev/architecture
+Verification article: https://lakehouse-contract-lab.pages.dev/verification
+Publisher information: https://lakehouse-contract-lab.pages.dev/publisher
 # ADSENSE-PUBLICATION:END
