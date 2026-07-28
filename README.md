@@ -2,7 +2,7 @@
 
 ## Live Demo
 
-- [Open the public GitHub Pages demo](https://kim3310.github.io/lakehouse-contract-lab/)
+- [Open the public GitHub Pages demo](https://lakehouse-contract-lab.pages.dev/)
 - Scope: credential-free, synthetic-data demo for data-contract review and evaluators.
 
 [![CI](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml)
@@ -296,7 +296,7 @@ MIT
 
 - Public entry: free synthetic pipeline and contract examples
 - Paid boundary: quoted private AI readiness sprint for lakehouse contract migration and quality reporting scope
-- Canonical URL: https://kim3310.github.io/lakehouse-contract-lab/
+- Canonical URL: https://lakehouse-contract-lab.pages.dev/
 - Lead capture: https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab&inquiry=private-ai-readiness-sprint#private-inquiry
 - Resource route: https://kim3310-doeon-kim-portfolio.pages.dev/resources/lakehouse-contract-lab/
 - Commercial route: https://kim3310-doeon-kim-portfolio.pages.dev/?offer=lakehouse-contract-lab#service-offers

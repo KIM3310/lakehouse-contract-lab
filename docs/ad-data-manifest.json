@@ -6,7 +6,7 @@
   "audience": "data engineers and platform governance owners",
   "public_resource": {
     "url": "https://kim3310-doeon-kim-portfolio.pages.dev/resources/lakehouse-contract-lab/",
-    "live_demo": "https://kim3310.github.io/lakehouse-contract-lab/",
+    "live_demo": "https://lakehouse-contract-lab.pages.dev/",
     "readiness_checklist": [
       "Architecture Summary",
       "Runtime And Data Flow",

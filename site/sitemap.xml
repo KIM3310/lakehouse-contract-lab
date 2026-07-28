@@ -1,17 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://kim3310.github.io/lakehouse-contract-lab/</loc>
+    <loc>https://lakehouse-contract-lab.pages.dev/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://kim3310.github.io/lakehouse-contract-lab/service-offer.json</loc>
+    <loc>https://lakehouse-contract-lab.pages.dev/service-offer.json</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kim3310.github.io/lakehouse-contract-lab/llms.txt</loc>
+    <loc>https://lakehouse-contract-lab.pages.dev/privacy.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://lakehouse-contract-lab.pages.dev/terms.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://lakehouse-contract-lab.pages.dev/llms.txt</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

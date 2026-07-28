@@ -3,7 +3,7 @@
 Purpose: lakehouse contract compiler, quality gate, artifact builder, and export adapter lab
 Free entry point: free synthetic pipeline and contract examples
 Paid boundary: quoted private AI readiness sprint for lakehouse contract migration and quality reporting scope
-Canonical URL: https://kim3310.github.io/lakehouse-contract-lab/
+Canonical URL: https://lakehouse-contract-lab.pages.dev/
 Repository: https://github.com/KIM3310/lakehouse-contract-lab
 System architecture: https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/system-architecture.md
 Revenue architecture: https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/revenue-architecture.md

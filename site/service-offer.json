@@ -1,7 +1,7 @@
 {
   "name": "Lakehouse Contract Lab",
   "slug": "lakehouse-contract-lab",
-  "canonical_url": "https://kim3310.github.io/lakehouse-contract-lab/",
+  "canonical_url": "https://lakehouse-contract-lab.pages.dev/",
   "repository_url": "https://github.com/KIM3310/lakehouse-contract-lab",
   "architecture_url": "https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/system-architecture.md",
   "revenue_architecture_url": "https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/revenue-architecture.md",
@@ -43,7 +43,7 @@
     "name": "Lakehouse Contract Lab",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Web, serverless, and local development environments",
-    "url": "https://kim3310.github.io/lakehouse-contract-lab/",
+    "url": "https://lakehouse-contract-lab.pages.dev/",
     "codeRepository": "https://github.com/KIM3310/lakehouse-contract-lab",
     "description": "Lakehouse Contract Lab is a public synthetic data-contract pipeline demo. Paid work is a quoted private AI readiness sprint for migration, quality-reporting, connector, and deployment scoping; no self-serve checkout is configured.",
     "creator": {
@@ -58,7 +58,7 @@
         "price": "0",
         "priceCurrency": "USD",
         "availability": "https://schema.org/InStock",
-        "url": "https://kim3310.github.io/lakehouse-contract-lab/"
+        "url": "https://lakehouse-contract-lab.pages.dev/"
       },
       {
         "@type": "Offer",

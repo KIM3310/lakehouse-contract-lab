@@ -2,7 +2,7 @@
 # Lakehouse Contract Lab - Makefile
 # =============================================================================
 
-.PHONY: check-bootstrap-python install test lint format build smoke smoke-no-build verify docker-build docker-run docker-down pipeline clean help
+.PHONY: check-bootstrap-python install test lint format build smoke smoke-no-build verify pages-deploy docker-build docker-run docker-down pipeline clean help
 
 VENV   := .venv
 PYTHON_MIN_VERSION := 3.11
@@ -88,6 +88,9 @@ verify: pipeline smoke-no-build ## Full local verification including artifact bu
 
 serve: install ## Start the FastAPI development server
 	$(VENV_PY) -m uvicorn app.main:app --host 127.0.0.1 --port $(APP_PORT) --reload
+
+pages-deploy: ## Deploy the static site to Cloudflare Pages
+	npx --yes wrangler@latest pages deploy site --project-name=lakehouse-contract-lab --branch=main
 
 docker-build: ## Build the Docker image
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .

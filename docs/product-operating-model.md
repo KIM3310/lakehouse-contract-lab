@@ -2,7 +2,7 @@
 
 ## Public Demo
 
-- URL: https://kim3310.github.io/lakehouse-contract-lab/
+- URL: https://lakehouse-contract-lab.pages.dev/
 - Scope: credential-free synthetic demo surface for quick data platform review.
 
 Repository: `lakehouse-contract-lab`
