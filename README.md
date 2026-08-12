@@ -2,11 +2,10 @@
 
 ## Live Demo
 
-- [Open the public GitHub Pages demo](https://lakehouse-contract-lab.pages.dev/)
+- [Open the public Cloudflare Pages demo](https://lakehouse-contract-lab.pages.dev/)
 - Scope: credential-free, synthetic-data demo for data-contract review and evaluators.
 
 [![CI](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/KIM3310/lakehouse-contract-lab/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/KIM3310/lakehouse-contract-lab/branch/main/graph/badge.svg)](https://codecov.io/gh/KIM3310/lakehouse-contract-lab)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
@@ -22,7 +21,6 @@ A contract-first data lab that turns data quality from a slide into a repeatable
 | Area | Details |
 |---|---|
 | Users | Data platform teams, BI teams, analytics engineers, and migration leaders. |
-| Technical path | Validate the demo, README, architecture notes, and quality gate before deeper workflow review. |
 | System scope | Spark/Delta-style medallion pipeline, quality gates, warehouse export, contracts, and architecture-pack framing. |
 | Operating boundary | Fixture data proves behavior; production use needs source-system contracts, ownership, lineage, and access policy. |
 | Evaluation path | Run the pytest/ruff pipeline and inspect generated quality reports and contract outputs. |
@@ -253,9 +251,10 @@ lakehouse-contract-lab/
 
 ## Operating Commands
 
-- `make verify` runs the Python bootstrap, lint, pipeline tests, artifact checks, and smoke checks.
+- `make verify` runs the Python bootstrap, lint, pipeline tests, deterministic artifact drift check, and smoke checks.
 - `python -m pytest tests -q` exercises the contract compiler, export adapters, API surface, and resource pack.
-- `python scripts/build_prebuilt_artifacts.py` refreshes the local JSON/Delta artifacts used by demos and API smoke checks.
+- `make build` (or `.venv/bin/python scripts/build_lakehouse_artifacts.py` after installation) refreshes the local JSON/Delta artifacts used by demos and API smoke checks.
+- Tracked artifact timestamps use the standard `SOURCE_DATE_EPOCH` override or the pinned `artifacts/source-date-epoch.txt`, preventing timestamp-only diffs during normal verification.
 
 ---
 

@@ -40,8 +40,30 @@ ROOT: Path = Path(__file__).resolve().parents[1]
 ARTIFACTS_DIR: Path = ROOT / "artifacts"
 DELTA_DIR: Path = ARTIFACTS_DIR / "runtime_delta"
 DOCS_DIR: Path = ROOT / "docs"
+SOURCE_DATE_FILE: Path = ARTIFACTS_DIR / "source-date-epoch.txt"
 
-NOW: datetime = datetime.now(timezone.utc).replace(microsecond=0)
+
+def artifact_timestamp() -> datetime:
+    """Return a reproducible artifact timestamp.
+
+    Release automation may override the checked-in epoch through the standard
+    SOURCE_DATE_EPOCH environment variable. Normal local verification reuses
+    the pinned snapshot epoch, so rebuilding does not create timestamp-only
+    diffs.
+    """
+    raw_epoch = os.getenv("SOURCE_DATE_EPOCH", "").strip()
+    if not raw_epoch:
+        raw_epoch = SOURCE_DATE_FILE.read_text(encoding="utf-8").strip()
+    try:
+        epoch = int(raw_epoch)
+    except ValueError as exc:
+        raise RuntimeError("SOURCE_DATE_EPOCH must be an integer Unix timestamp") from exc
+    if epoch < 0:
+        raise RuntimeError("SOURCE_DATE_EPOCH must not be negative")
+    return datetime.fromtimestamp(epoch, tz=timezone.utc).replace(microsecond=0)
+
+
+NOW: datetime = artifact_timestamp()
 OPENAI_BASE_URL: str = (
     os.getenv("OPENROUTER_BASE_URL", "").strip() or "https://openrouter.ai/api/v1"
     if os.getenv("OPENROUTER_API_KEY", "").strip()
@@ -126,6 +148,7 @@ def validate_prebuilt_artifacts() -> None:
         ARTIFACTS_DIR / "lakehouse-proof-pack.json",
         ARTIFACTS_DIR / "quality-report.json",
         ARTIFACTS_DIR / "architecture-summary.json",
+        ARTIFACTS_DIR / "source-pack.json",
         ARTIFACTS_DIR / "bronze-preview.json",
         ARTIFACTS_DIR / "silver-preview.json",
         ARTIFACTS_DIR / "gold-preview.json",
@@ -136,8 +159,22 @@ def validate_prebuilt_artifacts() -> None:
         raise RuntimeError(
             "Java runtime unavailable and required prebuilt artifacts are missing: " + ", ".join(missing)
         )
+
+    expected_timestamp = NOW.isoformat()
+    stale_timestamps: list[str] = []
+    for path in required_paths:
+        if path.suffix != ".json":
+            continue
+        artifact = json.loads(path.read_text(encoding="utf-8"))
+        if artifact.get("generatedAt") != expected_timestamp:
+            stale_timestamps.append(str(path.relative_to(ROOT)))
+    if stale_timestamps:
+        raise RuntimeError(
+            "Prebuilt artifact timestamps do not match artifacts/source-date-epoch.txt: " + ", ".join(stale_timestamps)
+        )
+
     logger.info(
-        "Java runtime unavailable; validated existing prebuilt artifacts instead of rebuilding Spark/Delta outputs"
+        "Java runtime unavailable; validated deterministic prebuilt artifacts instead of rebuilding Spark/Delta outputs"
     )
 
 
@@ -154,6 +191,7 @@ def build_spark() -> SparkSession:
         )
         .config("spark.driver.host", "127.0.0.1")
         .config("spark.driver.bindAddress", "127.0.0.1")
+        .config("spark.sql.session.timeZone", "UTC")
         .config("spark.sql.shuffle.partitions", "2")
     )
     return configure_spark_with_delta_pip(builder).getOrCreate()
@@ -199,7 +237,7 @@ def build_architecture_summary_artifact(
         "service": proof_pack["service"],
         "generatedAt": NOW.isoformat(),
         "generationMode": "static-fallback",
-        "headline": "Refresh-only architecture summary for Spark + Delta medallion proof.",
+        "headline": "Static architecture summary for the reproducible Spark + Delta medallion proof.",
         "summary": {
             "platformFit": "snowflake-and-databricks-inspectable",
             "qualityPosture": "quality-gates-visible",
