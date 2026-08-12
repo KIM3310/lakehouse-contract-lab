@@ -5,7 +5,8 @@
     "source_row_count": 12,
     "quality_rule_count": 4,
     "export_target_count": 4,
-    "validation_case_count": 4
+    "validation_case_count": 4,
+    "external_file_count": 0
   },
   "sourceRows": [
     {

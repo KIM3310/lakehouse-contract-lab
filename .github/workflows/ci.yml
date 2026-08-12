@@ -44,9 +44,16 @@ jobs:
             --cov-report=term-missing \
             --cov-report=xml:coverage.xml
 
-      - name: Build medallion artifacts
+      - name: Build deterministic medallion artifacts
         if: matrix.python-version == '3.11'
-        run: make build
+        env:
+          CI: "false"
+          BOOTSTRAP_PYTHON: python
+          PYSPARK_PYTHON: .venv/bin/python
+          PYSPARK_DRIVER_PYTHON: .venv/bin/python
+        run: |
+          make build
+          make artifact-drift
 
       - name: API smoke
         if: matrix.python-version == '3.11'

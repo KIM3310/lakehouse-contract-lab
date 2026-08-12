@@ -61,6 +61,15 @@ def bla():
                 sys.modules[mod_name] = original
 
 
+class TestReproducibleTimestamp:
+    def test_uses_checked_in_source_date_epoch(self, bla) -> None:
+        expected = datetime.fromtimestamp(
+            int(bla.SOURCE_DATE_FILE.read_text(encoding="utf-8").strip()),
+            tz=timezone.utc,
+        )
+        assert expected == bla.NOW
+
+
 class TestMedallionSourceContract:
     def test_source_rows_count(self, bla) -> None:
         assert len(bla.SOURCE_ROWS) == 12

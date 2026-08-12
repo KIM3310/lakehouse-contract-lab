@@ -2,7 +2,7 @@
 # Lakehouse Contract Lab - Makefile
 # =============================================================================
 
-.PHONY: check-bootstrap-python install test lint format build smoke smoke-no-build verify pages-deploy docker-build docker-run docker-down pipeline clean help
+.PHONY: check-bootstrap-python install test lint format build artifact-drift smoke smoke-no-build verify pages-deploy docker-build docker-run docker-down pipeline clean help
 
 VENV   := .venv
 PYTHON_MIN_VERSION := 3.11
@@ -64,6 +64,9 @@ format-check: install ## Check formatting without modifying files
 build: install ## Run the medallion pipeline and generate artifacts
 	$(VENV_PY) scripts/build_lakehouse_artifacts.py
 
+artifact-drift: ## Fail when deterministic tracked artifacts are stale
+	git diff --exit-code -- artifacts/*.json docs/lakehouse-contract-board.svg
+
 smoke: build ## Boot local API and smoke key runtime surfaces
 	@$(MAKE) smoke-no-build
 
@@ -84,7 +87,7 @@ smoke-no-build: install ## Boot local API and smoke key runtime surfaces without
 	curl -fsS "http://127.0.0.1:$$PORT/api/runtime/quality-report" >/dev/null; \
 	echo "smoke ok: http://127.0.0.1:$$PORT"
 
-verify: pipeline smoke-no-build ## Full local verification including artifact build and API smoke
+verify: pipeline artifact-drift smoke-no-build ## Full local verification including deterministic artifact drift and API smoke
 
 serve: install ## Start the FastAPI development server
 	$(VENV_PY) -m uvicorn app.main:app --host 127.0.0.1 --port $(APP_PORT) --reload
