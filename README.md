@@ -116,7 +116,7 @@ flowchart LR
 | IaC | Terraform | GCP Cloud Run deployment configuration |
 | Container | Docker / Docker Compose | Reproducible full-stack execution |
 | CI/CD | GitHub Actions | Lint, test, build, smoke test, Docker build |
-| Quality | pytest (81+ tests), ruff | Test suite with coverage; linting and formatting |
+| Quality | pytest, ruff | Full test suite with coverage; linting and formatting |
 
 ---
 
@@ -133,7 +133,7 @@ make install
 # If your default python3 is older than 3.11:
 make BOOTSTRAP_PYTHON=/path/to/python3.11 install
 
-# Run the full pipeline: lint, test, build artifacts
+# Run the full pipeline: Ruff lint, Ruff format check, tests, and artifact build
 make pipeline
 
 # Start the API server
@@ -154,7 +154,7 @@ docker compose up --build
 If Java is not installed, the pipeline validates checked-in prebuilt artifacts instead of rebuilding Spark/Delta outputs. Tests and the API layer work without a JVM.
 
 ```bash
-make test       # runs 81+ tests against prebuilt artifacts
+make test       # runs the full test suite against prebuilt artifacts
 make serve      # starts the API server
 ```
 
@@ -166,7 +166,7 @@ make serve      # starts the API server
 | `make test` | Run the full pytest suite |
 | `make lint` | Run ruff linter |
 | `make build` | Run the medallion pipeline and generate artifacts |
-| `make pipeline` | Full pipeline: lint + test + build |
+| `make pipeline` | Full pipeline: Ruff lint + Ruff format check + test + build |
 | `make verify` | Full verification: pipeline + API smoke test |
 | `make serve` | Start FastAPI dev server with hot reload |
 | `make docker-run` | Run via Docker Compose |
@@ -237,7 +237,7 @@ lakehouse-contract-lab/
 |   |-- export_targets.json      # Export target configurations
 |   |-- validation_cases.json    # Test validation cases
 |-- artifacts/                   # Generated pipeline outputs (JSON + Delta)
-|-- tests/                       # 81+ pytest tests (adapters, API, pipeline, resource pack)
+|-- tests/                       # pytest suite (adapters, API, pipeline, resource pack)
 |-- docs/
 |   |-- adr/                     # Architecture Decision Records
 |   |-- data-platform-operating-patterns.md # Consolidated rollout and demo patterns

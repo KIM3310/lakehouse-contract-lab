@@ -30,8 +30,9 @@ WORKDIR /app
 
 # Install Python dependencies first (layer caching)
 COPY requirements.txt pyproject.toml ./
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --no-cache-dir --upgrade "pip>=26.1.2" "setuptools>=83.0.0" && \
+    python -m pip install --no-cache-dir -r requirements.txt && \
+    python -m pip check
 
 # Copy application code
 COPY app/ ./app/
