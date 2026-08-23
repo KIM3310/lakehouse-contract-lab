@@ -2,7 +2,7 @@
 # Lakehouse Contract Lab - Makefile
 # =============================================================================
 
-.PHONY: check-bootstrap-python install test lint format build artifact-drift smoke smoke-no-build verify pages-deploy docker-build docker-run docker-down pipeline clean help
+.PHONY: check-bootstrap-python install test test-cov lint format format-check build artifact-drift smoke smoke-no-build verify serve pages-deploy docker-build docker-run docker-down docker-logs pipeline clean help
 
 VENV   := .venv
 PYTHON_MIN_VERSION := 3.11
@@ -107,7 +107,7 @@ docker-down: ## Stop Docker Compose services
 docker-logs: ## Follow Docker Compose logs
 	docker compose logs -f app
 
-pipeline: lint test build ## Full pipeline: lint, test, then build artifacts
+pipeline: lint format-check test build ## Full pipeline: lint, format check, test, then build artifacts
 
 clean: ## Remove generated files and caches
 	rm -rf $(VENV) __pycache__ .pytest_cache .ruff_cache *.egg-info
