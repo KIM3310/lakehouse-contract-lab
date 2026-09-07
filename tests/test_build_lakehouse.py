@@ -416,3 +416,20 @@ class TestOpenAIRefreshUrlSecurity:
             redirector.server_close()
             target.shutdown()
             target.server_close()
+
+
+class TestExecutionBoundary:
+    def test_missing_java_fails_instead_of_claiming_build(self, bla, monkeypatch):
+        monkeypatch.delenv("LAKEHOUSE_VALIDATE_PREBUILT_ONLY", raising=False)
+        monkeypatch.setenv("CI", "true")
+        monkeypatch.setattr(bla, "java_runtime_available", lambda: False)
+        with pytest.raises(RuntimeError, match="actual Spark/Delta"):
+            bla.main()
+
+    def test_snapshot_mode_is_only_explicit_opt_in(self, bla, monkeypatch):
+        monkeypatch.setenv("LAKEHOUSE_VALIDATE_PREBUILT_ONLY", "1")
+        calls = []
+        monkeypatch.setattr(bla, "validate_prebuilt_artifacts", lambda: calls.append("snapshot"))
+        monkeypatch.setattr(bla, "build_spark", lambda: pytest.fail("snapshot mode started Spark"))
+        bla.main()
+        assert calls == ["snapshot"]

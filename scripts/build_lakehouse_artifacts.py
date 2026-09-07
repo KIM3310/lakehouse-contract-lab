@@ -127,7 +127,9 @@ def ensure_java_home() -> None:
 
 def java_runtime_available() -> bool:
     ensure_java_home()
-    java_cmd = shutil.which("java")
+    java_cmd = (
+        str(Path(os.environ["JAVA_HOME"]) / "bin" / "java") if os.environ.get("JAVA_HOME") else shutil.which("java")
+    )
     if not java_cmd:
         return False
     try:
@@ -156,9 +158,7 @@ def validate_prebuilt_artifacts() -> None:
     ]
     missing = [str(path.relative_to(ROOT)) for path in required_paths if not path.exists()]
     if missing:
-        raise RuntimeError(
-            "Java runtime unavailable and required prebuilt artifacts are missing: " + ", ".join(missing)
-        )
+        raise RuntimeError("Required prebuilt artifacts are missing: " + ", ".join(missing))
 
     expected_timestamp = NOW.isoformat()
     stale_timestamps: list[str] = []
@@ -173,9 +173,7 @@ def validate_prebuilt_artifacts() -> None:
             "Prebuilt artifact timestamps do not match artifacts/source-date-epoch.txt: " + ", ".join(stale_timestamps)
         )
 
-    logger.info(
-        "Java runtime unavailable; validated deterministic prebuilt artifacts instead of rebuilding Spark/Delta outputs"
-    )
+    logger.info("Explicit snapshot-only mode: validated prebuilt files; Spark/Delta was NOT executed")
 
 
 def build_spark() -> SparkSession:
@@ -211,7 +209,15 @@ def rows_to_json(
     order_by: list[str],
     limit: int = 5,
 ) -> list[dict[str, Any]]:
-    rows = df.orderBy(*order_by).limit(limit).collect() if order_by else df.limit(limit).collect()
+    # Spark collect() converts timestamps through the Python process timezone.
+    # Format in the UTC Spark session before collecting so Seoul/UTC hosts agree.
+    for name, dtype in df.dtypes:
+        if dtype == "timestamp":
+            df = df.withColumn(name, F.date_format(F.col(name), "yyyy-MM-dd'T'HH:mm:ss"))
+    ordering = [F.col(name) for name in order_by]
+    if "source_rank" in df.columns and "source_rank" not in order_by:
+        ordering.append(F.col("source_rank").desc())
+    rows = df.orderBy(*ordering).limit(limit).collect() if ordering else df.limit(limit).collect()
     return [{key: normalize_value(value) for key, value in row.asDict().items()} for row in rows]
 
 
@@ -422,341 +428,344 @@ def build_svg(proof_pack: dict[str, Any]) -> None:
 
 def main() -> None:
     logger.info("Starting lakehouse artifact build")
-    if os.getenv("LAKEHOUSE_VALIDATE_PREBUILT_ONLY", "").strip() == "1" or os.getenv("CI", "").lower() == "true":
+    if os.getenv("LAKEHOUSE_VALIDATE_PREBUILT_ONLY", "").strip() == "1":
         validate_prebuilt_artifacts()
         return
 
     if not java_runtime_available():
-        validate_prebuilt_artifacts()
-        return
+        raise RuntimeError(
+            "Java 17 is required for an actual Spark/Delta build. Set JAVA_HOME or explicitly use LAKEHOUSE_VALIDATE_PREBUILT_ONLY=1 for snapshot validation only."
+        )
 
     spark: SparkSession = build_spark()
-    spark.sparkContext.setLogLevel("ERROR")
+    try:
+        spark.sparkContext.setLogLevel("ERROR")
 
-    if DELTA_DIR.exists():
-        shutil.rmtree(DELTA_DIR)
-        logger.info("Cleaned previous Delta directory")
-    DELTA_DIR.mkdir(parents=True, exist_ok=True)
-    ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
-    DOCS_DIR.mkdir(parents=True, exist_ok=True)
+        if DELTA_DIR.exists():
+            shutil.rmtree(DELTA_DIR)
+            logger.info("Cleaned previous Delta directory")
+        DELTA_DIR.mkdir(parents=True, exist_ok=True)
+        ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
+        DOCS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # --- Bronze layer: raw ingestion ---
-    logger.info("Building bronze layer from %d source rows", len(SOURCE_ROWS))
-    source: DataFrame = (
-        spark.createDataFrame(SOURCE_ROWS)
-        .withColumn("ingested_at", F.to_timestamp(F.lit(NOW.isoformat())))
-        .withColumn("source_rank", F.monotonically_increasing_id())
-        .withColumn("order_ts", F.to_timestamp("order_ts"))
-    )
-
-    bronze: DataFrame = source.select(
-        "order_id",
-        "customer_id",
-        "region",
-        "channel",
-        "status",
-        "amount",
-        "currency",
-        "order_ts",
-        "ingested_at",
-        "source_rank",
-    )
-
-    # --- Silver layer: quality gates + dedup ---
-    logger.info("Applying quality gates and deduplication for silver layer")
-    rule = (
-        F.when(F.col("customer_id").isNull(), F.lit("missing_customer"))
-        .when(F.col("region").isNull(), F.lit("missing_region"))
-        .when(F.col("amount") <= 0, F.lit("non_positive_amount"))
-        .otherwise(F.lit(None))
-    )
-    window = Window.partitionBy("order_id").orderBy(F.col("order_ts").desc(), F.col("source_rank").desc())
-    staged: DataFrame = (
-        bronze.withColumn("quality_issue", rule)
-        .withColumn("row_rank", F.row_number().over(window))
-        .withColumn(
-            "rejection_reason",
-            F.when(F.col("quality_issue").isNotNull(), F.col("quality_issue"))
-            .when(F.col("row_rank") > 1, F.lit("stale_duplicate"))
-            .otherwise(F.lit(None)),
+        # --- Bronze layer: raw ingestion ---
+        logger.info("Building bronze layer from %d source rows", len(SOURCE_ROWS))
+        source: DataFrame = (
+            spark.createDataFrame(SOURCE_ROWS)
+            .withColumn("ingested_at", F.to_timestamp(F.lit(NOW.isoformat())))
+            .withColumn("source_rank", F.monotonically_increasing_id())
+            .withColumn("order_ts", F.to_timestamp("order_ts"))
         )
-    )
-    silver: DataFrame = staged.filter(F.col("rejection_reason").isNull())
-    rejected: DataFrame = staged.filter(F.col("rejection_reason").isNotNull())
 
-    # --- Gold layer: region KPI aggregation ---
-    logger.info("Aggregating gold-layer region KPIs")
-    gold: DataFrame = (
-        silver.groupBy("region")
-        .agg(
-            F.round(F.sum("amount"), 2).alias("gross_revenue_usd"),
-            F.count("*").alias("accepted_orders"),
-            F.sum(F.when(F.col("status") == "completed", 1).otherwise(0)).alias("completed_orders"),
-            F.sum(F.when(F.col("status") == "processing", 1).otherwise(0)).alias("pipeline_orders"),
-            F.countDistinct("customer_id").alias("distinct_customers"),
+        bronze: DataFrame = source.select(
+            "order_id",
+            "customer_id",
+            "region",
+            "channel",
+            "status",
+            "amount",
+            "currency",
+            "order_ts",
+            "ingested_at",
+            "source_rank",
         )
-        .orderBy("region")
-    )
 
-    # --- Write Delta tables ---
-    table_specs: dict[str, tuple[DataFrame, Path]] = {
-        "bronze": (bronze, DELTA_DIR / "bronze_orders"),
-        "silver": (silver, DELTA_DIR / "silver_orders"),
-        "gold": (gold, DELTA_DIR / "gold_region_kpis"),
-    }
-    for layer_name, (df, path) in table_specs.items():
-        df.write.format("delta").mode("overwrite").save(str(path))
-        logger.info("Delta table written: %s -> %s", layer_name, path.name)
-
-    # --- Compute metrics ---
-    bronze_count: int = bronze.count()
-    silver_count: int = silver.count()
-    rejected_count: int = rejected.count()
-    gold_count: int = gold.count()
-    pass_rate: float = round((silver_count / bronze_count) * 100, 2)
-
-    logger.info(
-        "Pipeline metrics: bronze=%d silver=%d rejected=%d gold=%d pass_rate=%.2f%%",
-        bronze_count,
-        silver_count,
-        rejected_count,
-        gold_count,
-        pass_rate,
-    )
-
-    expectations: list[dict[str, Any]] = [
-        {
-            "name": "customer_present",
-            "layer": "silver",
-            "passed": bronze.filter(F.col("customer_id").isNotNull()).count(),
-            "failed": bronze.filter(F.col("customer_id").isNull()).count(),
-            "rule": "customer_id must be present before rows graduate into silver.",
-        },
-        {
-            "name": "region_present",
-            "layer": "silver",
-            "passed": bronze.filter(F.col("region").isNotNull()).count(),
-            "failed": bronze.filter(F.col("region").isNull()).count(),
-            "rule": "region is required for downstream territory KPIs.",
-        },
-        {
-            "name": "positive_amount",
-            "layer": "silver",
-            "passed": bronze.filter(F.col("amount") > 0).count(),
-            "failed": bronze.filter(F.col("amount") <= 0).count(),
-            "rule": "non-positive revenue is isolated into rejected quarantine rows.",
-        },
-        {
-            "name": "latest_order_record",
-            "layer": "silver",
-            "passed": silver_count,
-            "failed": staged.filter(F.col("row_rank") > 1).count(),
-            "rule": "only the latest duplicate order version can move into silver.",
-        },
-    ]
-
-    # --- Build artifacts ---
-    proof_pack: dict[str, Any] = {
-        "service": "lakehouse-contract-lab",
-        "status": "ok",
-        "generatedAt": NOW.isoformat(),
-        "schema": "lakehouse-proof-pack-v1",
-        "headline": (
-            "Spark + Delta medallion proof with explicit contract boundaries, "
-            "quality gates, and Delta version tracking."
-        ),
-        "summary": {
-            "sourceRows": len(SOURCE_ROWS),
-            "bronzeRows": bronze_count,
-            "silverAcceptedRows": silver_count,
-            "silverRejectedRows": rejected_count,
-            "goldRows": gold_count,
-            "deltaTables": 3,
-            "qualityPassRatePct": pass_rate,
-        },
-        "resourcePack": {
-            **resource_pack_summary(),
-            "qualityRules": load_quality_rules(),
-            "exportTargets": load_export_targets(),
-            "validationCases": load_validation_cases(),
-        },
-        "tables": [
-            {
-                "layer": "bronze",
-                "tableName": "bronze_orders",
-                "deltaVersion": latest_delta_version(DELTA_DIR / "bronze_orders"),
-                "rows": bronze_count,
-                "contract": [
-                    "raw order envelope preserved",
-                    "ingested_at attached",
-                    "source_rank retained for duplicate inspection",
-                ],
-            },
-            {
-                "layer": "silver",
-                "tableName": "silver_orders",
-                "deltaVersion": latest_delta_version(DELTA_DIR / "silver_orders"),
-                "rows": silver_count,
-                "contract": [
-                    "customer and region required",
-                    "amount must stay positive",
-                    "latest duplicate only",
-                ],
-            },
-            {
-                "layer": "gold",
-                "tableName": "gold_region_kpis",
-                "deltaVersion": latest_delta_version(DELTA_DIR / "gold_region_kpis"),
-                "rows": gold_count,
-                "contract": [
-                    "region-level KPI output",
-                    "completed and pipeline counts explicit",
-                    "distinct customer count preserved",
-                ],
-            },
-        ],
-        "governance": {
-            "approvalBoundary": (
-                "Only silver-accepted rows can shape gold KPIs; rejected rows stay queryable for human approval."
-            ),
-            "expectations": expectations,
-            "rejectedReasons": [
-                row["rejection_reason"]
-                for row in rows_to_json(
-                    rejected.select("rejection_reason").distinct(),
-                    ["rejection_reason"],
-                    limit=10,
-                )
-            ],
-        },
-        "snowflakeFit": {
-            "whyItMatters": (
-                "Shows contract-first medallion thinking, governed KPI outputs, and "
-                "handoff-friendly review assets for solution engineering conversations."
-            ),
-            "architecturePath": [
-                "/api/runtime/lakehouse-proof-pack",
-                "/api/runtime/table-preview/gold",
-                "docs/lakehouse-contract-board.svg",
-            ],
-        },
-        "databricksFit": {
-            "whyItMatters": (
-                "Uses real Spark + Delta execution and exposes quality gates, Delta "
-                "versions, and medallion transitions as explicit public proof."
-            ),
-            "architecturePath": [
-                "/api/runtime/lakehouse-proof-pack",
-                "/api/runtime/quality-report",
-                "scripts/build_lakehouse_artifacts.py",
-            ],
-        },
-        "proofAssets": [
-            "artifacts/lakehouse-proof-pack.json",
-            "artifacts/quality-report.json",
-            "docs/lakehouse-contract-board.svg",
-            "scripts/build_lakehouse_artifacts.py",
-            *[f"data/{path.name}" for path in data_files().values()],
-        ],
-        "links": {
-            "health": "/health",
-            "proofPack": "/api/runtime/lakehouse-proof-pack",
-            "qualityReport": "/api/runtime/quality-report",
-            "bronzePreview": "/api/runtime/table-preview/bronze",
-            "silverPreview": "/api/runtime/table-preview/silver",
-            "goldPreview": "/api/runtime/table-preview/gold",
-        },
-    }
-
-    quality_report: dict[str, Any] = {
-        "service": "lakehouse-contract-lab",
-        "generatedAt": NOW.isoformat(),
-        "schema": "lakehouse-quality-report-v1",
-        "summary": {
-            "acceptedRows": silver_count,
-            "failedRows": rejected_count,
-            "qualityPassRatePct": pass_rate,
-        },
-        "expectations": expectations,
-        "rejectedPreview": rows_to_json(
-            rejected.select(
-                "order_id",
-                "customer_id",
-                "region",
-                "amount",
+        # --- Silver layer: quality gates + dedup ---
+        logger.info("Applying quality gates and deduplication for silver layer")
+        rule = (
+            F.when(F.col("customer_id").isNull(), F.lit("missing_customer"))
+            .when(F.col("region").isNull(), F.lit("missing_region"))
+            .when(F.col("amount") <= 0, F.lit("non_positive_amount"))
+            .otherwise(F.lit(None))
+        )
+        window = Window.partitionBy("order_id").orderBy(F.col("order_ts").desc(), F.col("source_rank").desc())
+        staged: DataFrame = (
+            bronze.withColumn("quality_issue", rule)
+            .withColumn("row_rank", F.row_number().over(window))
+            .withColumn(
                 "rejection_reason",
-            ),
-            ["order_id"],
-            limit=10,
-        ),
-    }
+                F.when(F.col("quality_issue").isNotNull(), F.col("quality_issue"))
+                .when(F.col("row_rank") > 1, F.lit("stale_duplicate"))
+                .otherwise(F.lit(None)),
+            )
+        )
+        silver: DataFrame = staged.filter(F.col("rejection_reason").isNull())
+        rejected: DataFrame = staged.filter(F.col("rejection_reason").isNotNull())
 
-    bronze_preview: dict[str, Any] = {
-        "schema": "lakehouse-table-preview-v1",
-        "layer": "bronze",
-        "generatedAt": NOW.isoformat(),
-        "rows": rows_to_json(bronze, ["order_id"], limit=5),
-    }
-    silver_preview: dict[str, Any] = {
-        "schema": "lakehouse-table-preview-v1",
-        "layer": "silver",
-        "generatedAt": NOW.isoformat(),
-        "rows": rows_to_json(
-            silver.select(
-                "order_id",
-                "customer_id",
-                "region",
-                "status",
-                "amount",
-                "currency",
-            ),
-            ["order_id"],
-            limit=5,
-        ),
-    }
-    gold_preview: dict[str, Any] = {
-        "schema": "lakehouse-table-preview-v1",
-        "layer": "gold",
-        "generatedAt": NOW.isoformat(),
-        "rows": rows_to_json(gold, ["region"], limit=10),
-    }
-    databricks_export_ok = export_gold_kpis_to_databricks(gold_preview["rows"])
-    proof_pack["databricksExport"] = {
-        "configured": bool(os.getenv("DATABRICKS_HOST", "").strip()),
-        "executed": databricks_export_ok,
-        "target": f"{os.getenv('DATABRICKS_CATALOG', 'main')}.{os.getenv('DATABRICKS_SCHEMA', 'lakehouse_lab')}.region_kpis",
-    }
+        # --- Gold layer: region KPI aggregation ---
+        logger.info("Aggregating gold-layer region KPIs")
+        gold: DataFrame = (
+            silver.groupBy("region")
+            .agg(
+                F.round(F.sum("amount"), 2).alias("gross_revenue_usd"),
+                F.count("*").alias("accepted_orders"),
+                F.sum(F.when(F.col("status") == "completed", 1).otherwise(0)).alias("completed_orders"),
+                F.sum(F.when(F.col("status") == "processing", 1).otherwise(0)).alias("pipeline_orders"),
+                F.countDistinct("customer_id").alias("distinct_customers"),
+            )
+            .orderBy("region")
+        )
 
-    snowflake_export_ok = export_gold_kpis_to_snowflake(gold_preview["rows"])
-    proof_pack["snowflakeExport"] = {
-        "configured": bool(os.getenv("SNOWFLAKE_ACCOUNT", "").strip()),
-        "executed": snowflake_export_ok,
-        "target": "SNOWFLAKE_LEARNING_DB.GOLD.REGION_KPIS",
-    }
+        # --- Write Delta tables ---
+        table_specs: dict[str, tuple[DataFrame, Path]] = {
+            "bronze": (bronze, DELTA_DIR / "bronze_orders"),
+            "silver": (silver, DELTA_DIR / "silver_orders"),
+            "gold": (gold, DELTA_DIR / "gold_region_kpis"),
+        }
+        for layer_name, (df, path) in table_specs.items():
+            df.write.format("delta").mode("overwrite").save(str(path))
+            logger.info("Delta table written: %s -> %s", layer_name, path.name)
 
-    write_json(ARTIFACTS_DIR / "lakehouse-proof-pack.json", proof_pack)
-    write_json(ARTIFACTS_DIR / "quality-report.json", quality_report)
-    write_json(
-        ARTIFACTS_DIR / "architecture-summary.json", build_architecture_summary_artifact(proof_pack, quality_report)
-    )
-    write_json(
-        ARTIFACTS_DIR / "source-pack.json",
-        {
-            "schema": "lakehouse-source-pack-v1",
+        # --- Compute metrics ---
+        bronze_count: int = bronze.count()
+        silver_count: int = silver.count()
+        rejected_count: int = rejected.count()
+        gold_count: int = gold.count()
+        pass_rate: float = round((silver_count / bronze_count) * 100, 2)
+
+        logger.info(
+            "Pipeline metrics: bronze=%d silver=%d rejected=%d gold=%d pass_rate=%.2f%%",
+            bronze_count,
+            silver_count,
+            rejected_count,
+            gold_count,
+            pass_rate,
+        )
+
+        expectations: list[dict[str, Any]] = [
+            {
+                "name": "customer_present",
+                "layer": "silver",
+                "passed": bronze.filter(F.col("customer_id").isNotNull()).count(),
+                "failed": bronze.filter(F.col("customer_id").isNull()).count(),
+                "rule": "customer_id must be present before rows graduate into silver.",
+            },
+            {
+                "name": "region_present",
+                "layer": "silver",
+                "passed": bronze.filter(F.col("region").isNotNull()).count(),
+                "failed": bronze.filter(F.col("region").isNull()).count(),
+                "rule": "region is required for downstream territory KPIs.",
+            },
+            {
+                "name": "positive_amount",
+                "layer": "silver",
+                "passed": bronze.filter(F.col("amount") > 0).count(),
+                "failed": bronze.filter(F.col("amount") <= 0).count(),
+                "rule": "non-positive revenue is isolated into rejected quarantine rows.",
+            },
+            {
+                "name": "latest_order_record",
+                "layer": "silver",
+                "passed": silver_count,
+                "failed": staged.filter(F.col("row_rank") > 1).count(),
+                "rule": "only the latest duplicate order version can move into silver.",
+            },
+        ]
+
+        # --- Build artifacts ---
+        proof_pack: dict[str, Any] = {
+            "service": "lakehouse-contract-lab",
+            "status": "ok",
             "generatedAt": NOW.isoformat(),
-            "summary": resource_pack_summary(),
-            "sourceRows": SOURCE_ROWS,
-            "qualityRules": load_quality_rules(),
-            "exportTargets": load_export_targets(),
-            "validationCases": load_validation_cases(),
-        },
-    )
-    write_json(ARTIFACTS_DIR / "bronze-preview.json", bronze_preview)
-    write_json(ARTIFACTS_DIR / "silver-preview.json", silver_preview)
-    write_json(ARTIFACTS_DIR / "gold-preview.json", gold_preview)
-    build_svg(proof_pack)
+            "schema": "lakehouse-proof-pack-v1",
+            "headline": (
+                "Spark + Delta medallion proof with explicit contract boundaries, "
+                "quality gates, and Delta version tracking."
+            ),
+            "summary": {
+                "sourceRows": len(SOURCE_ROWS),
+                "bronzeRows": bronze_count,
+                "silverAcceptedRows": silver_count,
+                "silverRejectedRows": rejected_count,
+                "goldRows": gold_count,
+                "deltaTables": 3,
+                "qualityPassRatePct": pass_rate,
+            },
+            "resourcePack": {
+                **resource_pack_summary(),
+                "qualityRules": load_quality_rules(),
+                "exportTargets": load_export_targets(),
+                "validationCases": load_validation_cases(),
+            },
+            "tables": [
+                {
+                    "layer": "bronze",
+                    "tableName": "bronze_orders",
+                    "deltaVersion": latest_delta_version(DELTA_DIR / "bronze_orders"),
+                    "rows": bronze_count,
+                    "contract": [
+                        "raw order envelope preserved",
+                        "ingested_at attached",
+                        "source_rank retained for duplicate inspection",
+                    ],
+                },
+                {
+                    "layer": "silver",
+                    "tableName": "silver_orders",
+                    "deltaVersion": latest_delta_version(DELTA_DIR / "silver_orders"),
+                    "rows": silver_count,
+                    "contract": [
+                        "customer and region required",
+                        "amount must stay positive",
+                        "latest duplicate only",
+                    ],
+                },
+                {
+                    "layer": "gold",
+                    "tableName": "gold_region_kpis",
+                    "deltaVersion": latest_delta_version(DELTA_DIR / "gold_region_kpis"),
+                    "rows": gold_count,
+                    "contract": [
+                        "region-level KPI output",
+                        "completed and pipeline counts explicit",
+                        "distinct customer count preserved",
+                    ],
+                },
+            ],
+            "governance": {
+                "approvalBoundary": (
+                    "Only silver-accepted rows can shape gold KPIs; rejected rows stay queryable for human approval."
+                ),
+                "expectations": expectations,
+                "rejectedReasons": [
+                    row["rejection_reason"]
+                    for row in rows_to_json(
+                        rejected.select("rejection_reason").distinct(),
+                        ["rejection_reason"],
+                        limit=10,
+                    )
+                ],
+            },
+            "snowflakeFit": {
+                "whyItMatters": (
+                    "Shows contract-first medallion thinking, governed KPI outputs, and "
+                    "handoff-friendly review assets for solution engineering conversations."
+                ),
+                "architecturePath": [
+                    "/api/runtime/lakehouse-proof-pack",
+                    "/api/runtime/table-preview/gold",
+                    "docs/lakehouse-contract-board.svg",
+                ],
+            },
+            "databricksFit": {
+                "whyItMatters": (
+                    "Uses real Spark + Delta execution and exposes quality gates, Delta "
+                    "versions, and medallion transitions as explicit public proof."
+                ),
+                "architecturePath": [
+                    "/api/runtime/lakehouse-proof-pack",
+                    "/api/runtime/quality-report",
+                    "scripts/build_lakehouse_artifacts.py",
+                ],
+            },
+            "proofAssets": [
+                "artifacts/lakehouse-proof-pack.json",
+                "artifacts/quality-report.json",
+                "docs/lakehouse-contract-board.svg",
+                "scripts/build_lakehouse_artifacts.py",
+                *[f"data/{path.name}" for path in data_files().values()],
+            ],
+            "links": {
+                "health": "/health",
+                "proofPack": "/api/runtime/lakehouse-proof-pack",
+                "qualityReport": "/api/runtime/quality-report",
+                "bronzePreview": "/api/runtime/table-preview/bronze",
+                "silverPreview": "/api/runtime/table-preview/silver",
+                "goldPreview": "/api/runtime/table-preview/gold",
+            },
+        }
 
-    spark.stop()
+        quality_report: dict[str, Any] = {
+            "service": "lakehouse-contract-lab",
+            "generatedAt": NOW.isoformat(),
+            "schema": "lakehouse-quality-report-v1",
+            "summary": {
+                "acceptedRows": silver_count,
+                "failedRows": rejected_count,
+                "qualityPassRatePct": pass_rate,
+            },
+            "expectations": expectations,
+            "rejectedPreview": rows_to_json(
+                rejected.select(
+                    "order_id",
+                    "customer_id",
+                    "region",
+                    "amount",
+                    "rejection_reason",
+                ),
+                ["order_id"],
+                limit=10,
+            ),
+        }
+
+        bronze_preview: dict[str, Any] = {
+            "schema": "lakehouse-table-preview-v1",
+            "layer": "bronze",
+            "generatedAt": NOW.isoformat(),
+            "rows": rows_to_json(bronze, ["order_id"], limit=5),
+        }
+        silver_preview: dict[str, Any] = {
+            "schema": "lakehouse-table-preview-v1",
+            "layer": "silver",
+            "generatedAt": NOW.isoformat(),
+            "rows": rows_to_json(
+                silver.select(
+                    "order_id",
+                    "customer_id",
+                    "region",
+                    "status",
+                    "amount",
+                    "currency",
+                ),
+                ["order_id"],
+                limit=5,
+            ),
+        }
+        gold_preview: dict[str, Any] = {
+            "schema": "lakehouse-table-preview-v1",
+            "layer": "gold",
+            "generatedAt": NOW.isoformat(),
+            "rows": rows_to_json(gold, ["region"], limit=10),
+        }
+        databricks_export_ok = export_gold_kpis_to_databricks(gold_preview["rows"])
+        proof_pack["databricksExport"] = {
+            "configured": bool(os.getenv("DATABRICKS_HOST", "").strip()),
+            "executed": databricks_export_ok,
+            "target": f"{os.getenv('DATABRICKS_CATALOG', 'main')}.{os.getenv('DATABRICKS_SCHEMA', 'lakehouse_lab')}.region_kpis",
+        }
+
+        snowflake_export_ok = export_gold_kpis_to_snowflake(gold_preview["rows"])
+        proof_pack["snowflakeExport"] = {
+            "configured": bool(os.getenv("SNOWFLAKE_ACCOUNT", "").strip()),
+            "executed": snowflake_export_ok,
+            "target": "SNOWFLAKE_LEARNING_DB.GOLD.REGION_KPIS",
+        }
+
+        write_json(ARTIFACTS_DIR / "lakehouse-proof-pack.json", proof_pack)
+        write_json(ARTIFACTS_DIR / "quality-report.json", quality_report)
+        write_json(
+            ARTIFACTS_DIR / "architecture-summary.json", build_architecture_summary_artifact(proof_pack, quality_report)
+        )
+        write_json(
+            ARTIFACTS_DIR / "source-pack.json",
+            {
+                "schema": "lakehouse-source-pack-v1",
+                "generatedAt": NOW.isoformat(),
+                "summary": resource_pack_summary(),
+                "sourceRows": SOURCE_ROWS,
+                "qualityRules": load_quality_rules(),
+                "exportTargets": load_export_targets(),
+                "validationCases": load_validation_cases(),
+            },
+        )
+        write_json(ARTIFACTS_DIR / "bronze-preview.json", bronze_preview)
+        write_json(ARTIFACTS_DIR / "silver-preview.json", silver_preview)
+        write_json(ARTIFACTS_DIR / "gold-preview.json", gold_preview)
+        build_svg(proof_pack)
+
+    finally:
+        spark.stop()
     logger.info("Lakehouse artifact build complete")
 
 

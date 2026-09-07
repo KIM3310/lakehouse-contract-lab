@@ -1,0 +1,28 @@
+{
+  "schema": "lakehouse-actual-runtime-v1",
+  "scope": "local[2], synthetic 12-row source fixture; actual Spark and Delta read/write, no warehouse export",
+  "python": "3.12.14",
+  "spark": "3.5.9",
+  "delta": "3.3.3",
+  "java": "17.0.20.1",
+  "tables": {
+    "bronze": {
+      "rows": 12,
+      "deltaVersion": 0
+    },
+    "silver": {
+      "rows": 8,
+      "deltaVersion": 0
+    },
+    "gold": {
+      "rows": 5,
+      "deltaVersion": 0
+    }
+  },
+  "artifacts": {
+    "bronze-preview.json": "6c2962518d25e851ee0cacbc228a69fcbd36002c64a12cd9985ad66696c1b226",
+    "gold-preview.json": "267d1b70261eb9674f645e20318d50e5730457e0f268af60663e4179853ee6d3",
+    "silver-preview.json": "c0708a18b0a7e53366b3b92583c9a6d2ed9565ceeeb9178138c0e0211b55b83b"
+  },
+  "pipelineSha256": "b4690cc5395626396bd5799d4a929e32da9b0ecac3e4f8c4df432566dacab08c"
+}

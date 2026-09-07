@@ -25,6 +25,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
+      - name: Set up Java 17 for real Spark execution
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -52,7 +58,8 @@ jobs:
           PYSPARK_PYTHON: .venv/bin/python
           PYSPARK_DRIVER_PYTHON: .venv/bin/python
         run: |
-          make build
+          make install
+          .venv/bin/python -m scripts.verify_spark_runtime
           make artifact-drift
 
       - name: API smoke
