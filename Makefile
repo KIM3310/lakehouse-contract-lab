@@ -87,7 +87,10 @@ smoke-no-build: install ## Boot local API and smoke key runtime surfaces without
 	curl -fsS "http://127.0.0.1:$$PORT/api/runtime/quality-report" >/dev/null; \
 	echo "smoke ok: http://127.0.0.1:$$PORT"
 
-verify: pipeline artifact-drift smoke-no-build ## Full local verification including deterministic artifact drift and API smoke
+verify: ## Full local verification including deterministic artifact drift and API smoke
+	$(MAKE) pipeline
+	$(MAKE) artifact-drift
+	$(MAKE) smoke-no-build
 
 serve: install ## Start the FastAPI development server
 	$(VENV_PY) -m uvicorn app.main:app --host 127.0.0.1 --port $(APP_PORT) --reload
@@ -107,7 +110,9 @@ docker-down: ## Stop Docker Compose services
 docker-logs: ## Follow Docker Compose logs
 	docker compose logs -f app
 
-pipeline: lint format-check test build ## Full pipeline: lint, format check, test, then build artifacts
+pipeline: ## Ordered even under make -j
+	$(MAKE) lint format-check test
+	$(MAKE) build
 
 clean: ## Remove generated files and caches
 	rm -rf $(VENV) __pycache__ .pytest_cache .ruff_cache *.egg-info
