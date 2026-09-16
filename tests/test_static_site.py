@@ -93,6 +93,33 @@ def test_missing_route_page_explains_the_static_boundary() -> None:
     assert "https://lakehouse-contract-lab.pages.dev/" in page.references
 
 
+@pytest.mark.parametrize(
+    "home_url",
+    [
+        "https://attacker.invalid/?return=https://lakehouse-contract-lab.pages.dev/",
+        "https://attacker.invalid/#https://lakehouse-contract-lab.pages.dev/",
+        "https://lakehouse-contract-lab.pages.dev.attacker.invalid/",
+        "https://lakehouse-contract-lab.pages.dev@attacker.invalid/",
+        "http://lakehouse-contract-lab.pages.dev/",
+        "//attacker.invalid/https://lakehouse-contract-lab.pages.dev/",
+    ],
+)
+def test_missing_route_rejects_wrong_home_link_despite_canonical_asset(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, home_url: str
+) -> None:
+    source = (SITE / "404.html").read_text(encoding="utf-8")
+    source = source.replace(
+        'href="https://lakehouse-contract-lab.pages.dev/"', f'href="{home_url}"'
+    )
+    source = source.replace(
+        "</nav>", '<img src="https://lakehouse-contract-lab.pages.dev/" alt=""></nav>'
+    )
+    (tmp_path / "404.html").write_text(source, encoding="utf-8")
+    monkeypatch.setitem(globals(), "SITE", tmp_path)
+    with pytest.raises(AssertionError):
+        test_missing_route_page_explains_the_static_boundary()
+
+
 def test_snapshot_instructions_require_explicit_opt_in() -> None:
     documents = [
         (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8"),
