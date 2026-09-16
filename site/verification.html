@@ -12,7 +12,7 @@
   <meta property="og:title" content="Verification | Lakehouse Contract Lab">
   <meta property="og:description" content="Reproducible tests, quality gates, CI files, and evidence limits for Lakehouse Contract Lab.">
   <meta property="og:url" content="https://lakehouse-contract-lab.pages.dev/verification">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Verification | Lakehouse Contract Lab","description":"Reproducible tests, quality gates, CI files, and evidence limits for Lakehouse Contract Lab.","url":"https://lakehouse-contract-lab.pages.dev/verification","dateModified":"2026-07-28","author":{"@type":"Person","name":"Doeon Kim","alternateName":"KIM3310","url":"https://github.com/KIM3310","sameAs":["https://kim3310-doeon-kim-portfolio.pages.dev","https://www.linkedin.com/in/doeon-kim-4742a2388"]},"publisher":{"@type":"Person","name":"Doeon Kim","alternateName":"KIM3310","url":"https://kim3310-doeon-kim-portfolio.pages.dev","sameAs":["https://github.com/KIM3310","https://www.linkedin.com/in/doeon-kim-4742a2388"]},"isAccessibleForFree":true}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Verification | Lakehouse Contract Lab","description":"Reproducible tests, quality gates, CI files, and evidence limits for Lakehouse Contract Lab.","url":"https://lakehouse-contract-lab.pages.dev/verification","dateModified":"2026-09-16","author":{"@type":"Person","name":"Doeon Kim","alternateName":"KIM3310","url":"https://github.com/KIM3310","sameAs":["https://kim3310-doeon-kim-portfolio.pages.dev","https://www.linkedin.com/in/doeon-kim-4742a2388"]},"publisher":{"@type":"Person","name":"Doeon Kim","alternateName":"KIM3310","url":"https://kim3310-doeon-kim-portfolio.pages.dev","sameAs":["https://github.com/KIM3310","https://www.linkedin.com/in/doeon-kim-4742a2388"]},"isAccessibleForFree":true}</script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4973160293737562" crossorigin="anonymous"></script>
   <style>
     :root { color-scheme: light; --ink: #17201f; --muted: #52605d; --line: #cbd2ce; --paper: #ffffff; --ground: #f5f6f4; --green: #126455; --coral: #c94732; --gold: #b67a00; }
@@ -61,48 +61,52 @@
   <header class="site-header">
     <nav class="site-nav" aria-label="Primary">
       <strong>Lakehouse Contract Lab</strong>
-      <div class="nav-links"><a href="/">Home</a><a href="/guide">Project guide</a><a href="/architecture">Architecture</a><a href="/verification">Verification</a><a href="/publisher">Publisher</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div>
+      <div class="nav-links"><a href="index.html">Home</a><a href="guide.html">Project guide</a><a href="architecture.html">Architecture</a><a href="verification.html">Verification</a><a href="publisher.html">Publisher</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></div>
     </nav>
   </header>
   <main class="article-shell">
-    <p class="breadcrumbs"><a href="/">Home</a> / Verification</p>
+    <p class="breadcrumbs"><a href="index.html">Home</a> / Verification</p>
     <header class="article-intro">
       <div class="kicker">Verification</div>
       <h1>Verification | Lakehouse Contract Lab</h1>
       <p class="lede">A practical reading path for the repository&#039;s test surface, release checks, and the limits of what those checks can establish.</p>
-      <p class="review-note">Reviewed 2026-07-28. This page is derived from checked-in repository evidence and links back to its source.</p>
+      <p class="review-note">Updated 2026-09-16. Commands and limits follow the current verification guide. Linked runtime evidence is a prior local execution, not a result of publishing this page.</p>
     </header>
 
-    <article><h2>Quality Notes - Lakehouse Contract Lab</h2>
-<p>Updated: 2026-05-30</p>
-<p>These notes keep the repository easy to review without overstating what is production-ready.</p>
-<h3>Profile</h3>
-<div class="table-scroll"><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td>Repository</td><td><code>lakehouse-contract-lab</code></td></tr><tr><td>Primary stack</td><td>Python, Terraform, Docker</td></tr><tr><td>Review expectation</td><td>Local review should not require customer data or production credentials.</td></tr></tbody></table></div>
-<h3>Commands</h3>
-<div class="table-scroll"><table><thead><tr><th>Purpose</th><th>Command</th></tr></thead><tbody><tr><td>Full local gate</td><td><code>make verify</code></td></tr><tr><td>Test suite</td><td><code>make test</code></td></tr></tbody></table></div>
-<h3>CI</h3>
-<ul><li>.github/workflows/architecture-blueprint.yml</li><li>.github/workflows/ci.yml</li><li>.github/workflows/dependency-review.yml</li><li>.github/workflows/repository-health.yml</li><li>.github/workflows/repository-surface.yml</li><li>.github/workflows/secret-scan.yml</li></ul>
-<h3>Boundaries</h3>
-<ul><li>Demo, fixture, and synthetic-data modes must stay clearly labeled.</li><li>Provider keys, tenant credentials, warehouse secrets, medical data, financial data, or customer logs must never be committed.</li><li>Production claims require environment-specific validation, monitoring, rollback, and human approval paths.</li><li>Screenshots, videos, and README claims should match the current implementation and documented commands.</li></ul>
-<h3>Before Presenting</h3>
-<ul><li>README explains the user, the pain, the safety boundary, and the fast path.</li><li><code>docs/service-launch-playbook.md</code> explains the product, pilot, service, or proof-of-value angle when relevant.</li><li>Tests or smoke checks are documented even when optional infrastructure is unavailable.</li><li>Failure modes and unsupported claims are visible before the project is presented externally.</li></ul>
+    <article><h2>Choose a verification path</h2>
+<p>This static publication does not run Spark or host the FastAPI service. Each command below checks a different part of the repository.</p>
+<h3>Unit, API, and site tests</h3>
+<p>Use Python 3.11 or newer. These tests use synthetic fixtures and mocked warehouse clients. They do not require Java or production credentials.</p>
+<pre><code>make install
+.venv/bin/python -m pytest</code></pre>
+<h3>Explicit snapshot-only validation</h3>
+<p>When Java is unavailable, opt in to a check of the committed artifact files and timestamps. This does not execute Spark or reload Delta tables.</p>
+<pre><code>LAKEHOUSE_VALIDATE_PREBUILT_ONLY=1 .venv/bin/python scripts/build_lakehouse_artifacts.py</code></pre>
+<h3>Actual Spark and Delta verification</h3>
+<p>Install Java 17 and set <code>JAVA_HOME</code> when needed. A normal build fails without Java. It never silently substitutes snapshot-only validation.</p>
+<pre><code>.venv/bin/python -m scripts.verify_spark_runtime
+make verify</code></pre>
+<p>The runtime check builds the synthetic pipeline and opens a second Spark session to reload its Delta tables. The full gate also checks formatting, tests, artifact drift, and the local API.</p>
+<h3>Read prior evidence with its limits</h3>
+<p>The <a href="https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/evidence/spark-runtime.json">checked-in runtime report</a> records a separate local execution with 12 bronze, 8 silver, and 5 gold rows. The <a href="https://github.com/KIM3310/lakehouse-contract-lab/blob/main/artifacts/quality-report.json">quality snapshot</a> records 4 rejected rows. Publishing this page does not rerun either check.</p>
+<p>The fixture uses <code>local[2]</code> and is not a scale benchmark. This evidence does not claim executed Snowflake or Databricks exports, deployed cloud infrastructure, or production readiness.</p>
       <h2>Checked-in evidence inventory</h2>
       <p>The following files and commands are discovered from this repository rather than inferred from a generic template. Their presence does not prove production readiness by itself; it gives reviewers a concrete path to reproduce the maintained checks.</p>
       <h3>Verification commands</h3>
       <ul><li><code>make verify</code></li><li><code>make test</code></li><li><code>make lint</code></li><li><code>make build</code></li></ul>
       <h3>Test files</h3>
-      <ul><li><code>tests/__init__.py</code></li><li><code>tests/test_api.py</code></li><li><code>tests/test_build_lakehouse.py</code></li><li><code>tests/test_databricks_export.py</code></li><li><code>tests/test_databricks_export_bridge.py</code></li><li><code>tests/test_resource_pack.py</code></li><li><code>tests/test_snowflake_export.py</code></li><li><code>tests/test_snowflake_export_bridge.py</code></li></ul>
+      <ul><li><code>tests/__init__.py</code></li><li><code>tests/test_api.py</code></li><li><code>tests/test_build_lakehouse.py</code></li><li><code>tests/test_databricks_export.py</code></li><li><code>tests/test_databricks_export_bridge.py</code></li><li><code>tests/test_resource_pack.py</code></li><li><code>tests/test_snowflake_export.py</code></li><li><code>tests/test_snowflake_export_bridge.py</code></li><li><code>tests/test_static_site.py</code></li></ul>
       <h3>Continuous integration workflows</h3>
       <ul><li><code>.github/workflows/architecture-blueprint.yml</code></li><li><code>.github/workflows/ci.yml</code></li><li><code>.github/workflows/dependency-review.yml</code></li><li><code>.github/workflows/github-pages-demo.yml</code></li><li><code>.github/workflows/repository-health.yml</code></li><li><code>.github/workflows/repository-surface.yml</code></li><li><code>.github/workflows/secret-scan.yml</code></li></ul>
       <h2>How to interpret the result</h2>
       <p>A passing local or CI check supports only the behavior covered by that check. It does not establish security certification, regulatory approval, clinical validity, production availability, or a customer outcome. Review the source, fixtures, environment assumptions, and failure paths before extending the result to another deployment.</p></article>
     <aside class="source-basis">
-      <strong>Source basis:</strong> <a href="https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/quality-gate.md" rel="noopener">docs/quality-gate.md</a>, <a href="https://github.com/KIM3310/lakehouse-contract-lab/blob/main/README.md" rel="noopener">README.md</a>. Corrections can be proposed through the public repository without submitting private data.
+      <strong>Source basis:</strong> <a href="https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/VERIFICATION.md" rel="noopener">docs/VERIFICATION.md</a>, <a href="https://github.com/KIM3310/lakehouse-contract-lab/blob/main/README.md" rel="noopener">README.md</a>. Corrections can be proposed through the public repository without submitting private data.
     </aside>
   </main>
   <footer class="site-footer">
     <div class="site-footer-inner">
-      <div class="site-footer-links"><a href="/">Home</a><a href="/guide">Project guide</a><a href="/architecture">Architecture</a><a href="/verification">Verification</a><a href="/publisher">Publisher</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="https://kim3310-doeon-kim-portfolio.pages.dev/">Resource atlas</a></div>
+      <div class="site-footer-links"><a href="index.html">Home</a><a href="guide.html">Project guide</a><a href="architecture.html">Architecture</a><a href="verification.html">Verification</a><a href="publisher.html">Publisher</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="https://kim3310-doeon-kim-portfolio.pages.dev/">Resource atlas</a></div>
       <p>Advertising may appear on this public editorial page after Google approves the site. Ads are not placed inside private, transactional, diagnostic, security-response, or operational workflows.</p>
     </div>
   </footer>

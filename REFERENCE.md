@@ -29,7 +29,7 @@ A contract-first data lab that turns data quality from a slide into a repeatable
 
 - **Start here:** Inspect the contract checks, quality reports, and medallion layer artifacts before deployment notes.
 - **Local smoke check:** Run `make smoke-no-build` to exercise the API transiently on port `8097`. For interactive docs, run `make serve` and open `http://127.0.0.1:8096/docs`.
-- **Checks:** Run `make verify`; CI uses prebuilt artifact validation when a Spark/Java runtime is unavailable.
+- **Checks:** Run `make verify` with Java 17. Without Java, use the explicit snapshot-only command below. CI installs Java 17 for real Spark verification.
 
 ## Service Launch Playbook
 
@@ -151,12 +151,20 @@ docker compose up --build
 
 ### No Java Runtime?
 
-If Java is not installed, the pipeline validates checked-in prebuilt artifacts instead of rebuilding Spark/Delta outputs. Tests and the API layer work without a JVM.
+A normal build requires Java 17 and fails when it is unavailable. To check only the committed artifact files and timestamps, opt in to snapshot-only validation after `make install`:
 
 ```bash
-make test       # runs the full test suite against prebuilt artifacts
-make serve      # starts the API server
+LAKEHOUSE_VALIDATE_PREBUILT_ONLY=1 .venv/bin/python scripts/build_lakehouse_artifacts.py
 ```
+
+This does not execute Spark, reload Delta tables, or perform warehouse exports. Unit/API tests and the local API can use the existing artifacts without a JVM:
+
+```bash
+make test
+make serve
+```
+
+The API runs on the local server, not on the static website.
 
 ### Makefile Reference
 

@@ -1,5 +1,3 @@
-"""Regression checks for the static publication, independent of Spark."""
-
 from __future__ import annotations
 
 import json
@@ -47,6 +45,8 @@ def test_static_links_work_at_root_and_project_subpath(page_path: Path) -> None:
             assert resolved.path.startswith(mount), (page_path.name, reference, resolved.path)
             relative = unquote(resolved.path.removeprefix(mount))
             target = SITE / relative
+            if target.is_dir():
+                target /= "index.html"
             assert target.is_file(), (page_path.name, reference, relative)
             if resolved.fragment and target.suffix == ".html":
                 assert resolved.fragment in Page(target).elements, (page_path.name, reference)
@@ -94,10 +94,16 @@ def test_missing_route_page_explains_the_static_boundary() -> None:
 
 
 def test_snapshot_instructions_require_explicit_opt_in() -> None:
-    contributing = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
-    verification = " ".join(Page(SITE / "verification.html").text)
-    for text in (contributing, verification):
+    documents = [
+        (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8"),
+        (ROOT / "REFERENCE.md").read_text(encoding="utf-8"),
+        " ".join(Page(SITE / "verification.html").text),
+        " ".join(Page(SITE / "guide.html").text),
+    ]
+    for text in documents:
         assert "LAKEHOUSE_VALIDATE_PREBUILT_ONLY=1" in text
         assert "snapshot-only" in text
         assert "Java 17" in text
-    assert "On machines without Java, the build script validates" not in contributing
+        assert "On machines without Java, the build script validates" not in text
+        assert "If Java is not installed, the pipeline validates" not in text
+        assert "CI uses prebuilt artifact validation when" not in text
