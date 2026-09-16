@@ -90,7 +90,7 @@ def test_missing_route_page_explains_the_static_boundary() -> None:
     text = " ".join(page.text)
     assert "Page not found" in text
     assert "This static site does not host pipeline APIs." in text
-    assert "https://lakehouse-contract-lab.pages.dev/" in page.references
+    assert page.elements["project-home"]["href"] == "https://lakehouse-contract-lab.pages.dev/"
 
 
 @pytest.mark.parametrize(
@@ -108,12 +108,8 @@ def test_missing_route_rejects_wrong_home_link_despite_canonical_asset(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, home_url: str
 ) -> None:
     source = (SITE / "404.html").read_text(encoding="utf-8")
-    source = source.replace(
-        'href="https://lakehouse-contract-lab.pages.dev/"', f'href="{home_url}"'
-    )
-    source = source.replace(
-        "</nav>", '<img src="https://lakehouse-contract-lab.pages.dev/" alt=""></nav>'
-    )
+    source = source.replace('href="https://lakehouse-contract-lab.pages.dev/"', f'href="{home_url}"')
+    source = source.replace("</nav>", '<img src="https://lakehouse-contract-lab.pages.dev/" alt=""></nav>')
     (tmp_path / "404.html").write_text(source, encoding="utf-8")
     monkeypatch.setitem(globals(), "SITE", tmp_path)
     with pytest.raises(AssertionError):
