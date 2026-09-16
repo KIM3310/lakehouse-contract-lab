@@ -48,7 +48,15 @@ Configuration lives in `pyproject.toml` under `[tool.ruff]`:
 make build          # Run the full Spark + Delta medallion pipeline
 ```
 
-This requires a Java 17 runtime. On machines without Java, the build script validates the checked-in prebuilt artifacts instead.
+This requires a Java 17 runtime. A normal build fails when Java is unavailable.
+
+To validate the checked-in files without executing Spark, opt in to snapshot-only validation:
+
+```bash
+LAKEHOUSE_VALIDATE_PREBUILT_ONLY=1 .venv/bin/python scripts/build_lakehouse_artifacts.py
+```
+
+This checks existing artifact files and timestamps. It does not execute Spark, reload Delta tables, or perform warehouse exports. See [verification](docs/VERIFICATION.md) for the separate runtime check.
 
 ## Code Style
 

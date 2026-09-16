@@ -184,8 +184,8 @@
         <div class="quick" aria-label="Demo facts">
           <span>Credential-free</span>
           <span>Synthetic data</span>
-          <span>Public-safe</span>
-          <span>GitHub Pages</span>
+          <span>Static snapshots</span>
+          <span>No live Spark</span>
         </div>
         <div class="actions">
           <a class="primary" href="#demo">Try the demo</a>
@@ -197,15 +197,15 @@
       <section class="demo-panel" id="demo" aria-label="Interactive demo">
         <div class="panel-top">
           <div>
-            <p class="eyebrow">Live proof surface</p>
+            <p class="eyebrow">Checked-in evidence</p>
             <h2>Spark contracts, quality gates, rejected rows, KPI artifacts</h2>
           </div>
-          <div class="status">online</div>
+          <div class="status">Static synthetic example</div>
         </div>
         <div class="scenario-grid" aria-label="Demo scenarios">
-          <button class="scenario-button active" type="button" data-index="0" aria-pressed="true"><span>Bronze to silver gate</span><strong>12 synthetic rows</strong></button>
-          <button class="scenario-button" type="button" data-index="1" aria-pressed="false"><span>Rejected-row queue</span><strong>Reasons visible</strong></button>
-          <button class="scenario-button" type="button" data-index="2" aria-pressed="false"><span>KPI export</span><strong>Local artifact path</strong></button>
+          <button class="scenario-button active" type="button" data-index="0" aria-pressed="true" aria-controls="scenario-result"><span>Bronze to silver gate</span><strong>12 source rows</strong></button>
+          <button class="scenario-button" type="button" data-index="1" aria-pressed="false" aria-controls="scenario-result"><span>Rejected-row queue</span><strong>4 rejected rows</strong></button>
+          <button class="scenario-button" type="button" data-index="2" aria-pressed="false" aria-controls="scenario-result"><span>KPI export</span><strong>5 regional KPI rows</strong></button>
         </div>
         <div class="screen">
           <div class="screen-bar">
@@ -213,16 +213,17 @@
             <code>lakehouse-contract-lab demo</code>
           </div>
           <div class="demo-body">
-            <article class="metric">
+            <article class="metric" id="scenario-result" role="status" aria-atomic="true">
               <span id="scenario-title">Bronze to silver gate</span>
-              <strong id="scenario-metric">12 synthetic rows</strong>
-              <p id="scenario-detail">Shows records moving through schema checks, freshness windows, and quality gates.</p>
+              <strong id="scenario-metric">12 source, 8 accepted</strong>
+              <p id="scenario-detail">The checked-in synthetic snapshot records 8 accepted rows after quality checks and latest-record selection.</p>
+              <p><a id="scenario-evidence" href="https://github.com/KIM3310/lakehouse-contract-lab/blob/main/artifacts/lakehouse-proof-pack.json">Inspect the pipeline snapshot</a></p>
             </article>
             <article class="timeline">
               <h3>Architecture flow</h3>
-              <div class="step"><b>1</b><span>Open a synthetic scenario that matches the repository's core workflow.</span></div>
-              <div class="step"><b>2</b><span>Inspect the signal, boundary, and review-facing output without credentials.</span></div>
-              <div class="step"><b>3</b><span>Use the source repository and local verification command for implementation-level inspection.</span></div>
+              <div class="step"><b>1</b><span>Select a checked-in synthetic snapshot.</span></div>
+              <div class="step"><b>2</b><span>Open its evidence file to inspect accepted rows, rejection reasons, or regional KPIs.</span></div>
+              <div class="step"><b>3</b><span>This page does not run Spark or query a live API. <a href="https://github.com/KIM3310/lakehouse-contract-lab/blob/main/docs/evidence/spark-runtime.json">Prior local Spark evidence</a> records the separate runtime check.</span></div>
             </article>
           </div>
         </div>
@@ -240,7 +241,7 @@
       </article>
       <article class="notice">
         <h3>Local verification</h3>
-        <p><code>make verify</code></p>
+        <p><a href="verification.html">Choose unit, snapshot-only, or Java 17 Spark verification</a>.</p>
       </article>
     </section>
   <!-- search-growth-offer:start -->
@@ -263,11 +264,12 @@
 </main>
 
   <script>
-    const scenarios = [{"title":"Bronze to silver gate","metric":"12 synthetic rows","detail":"Shows fixture records moving through schema checks and quality gates."},{"title":"Rejected-row queue","metric":"Reasons visible","detail":"Keeps failed fixture rows visible with rejection reasons instead of silently dropping data."},{"title":"KPI export","metric":"Local artifact path","detail":"Demonstrates governed KPI artifact generation for repository-level inspection."}];
+    const scenarios = [{"title":"Bronze to silver gate","metric":"12 source, 8 accepted","detail":"The checked-in synthetic snapshot records 8 accepted rows after quality checks and latest-record selection.","evidencePath":"artifacts/lakehouse-proof-pack.json","evidenceLabel":"Inspect the pipeline snapshot"},{"title":"Rejected-row queue","metric":"4 rejected rows","detail":"The checked-in quality report records stale_duplicate, missing_customer, missing_region, and non_positive_amount rejection reasons.","evidencePath":"artifacts/quality-report.json","evidenceLabel":"Inspect rejected rows and reasons"},{"title":"KPI export","metric":"5 regional KPI rows","detail":"The checked-in gold preview contains regional order counts and revenue totals. Publishing this page does not execute warehouse exports.","evidencePath":"artifacts/gold-preview.json","evidenceLabel":"Inspect the regional KPI snapshot"}];
     const buttons = Array.from(document.querySelectorAll('.scenario-button'));
     const title = document.getElementById('scenario-title');
     const metric = document.getElementById('scenario-metric');
     const detail = document.getElementById('scenario-detail');
+    const evidence = document.getElementById('scenario-evidence');
     buttons.forEach((button) => {
       button.addEventListener('click', () => {
         const index = Number(button.dataset.index);
@@ -279,6 +281,8 @@
         title.textContent = scenario.title;
         metric.textContent = scenario.metric;
         detail.textContent = scenario.detail;
+        evidence.href = `https://github.com/KIM3310/lakehouse-contract-lab/blob/main/${scenario.evidencePath}`;
+        evidence.textContent = scenario.evidenceLabel;
       });
     });
   </script>
@@ -295,7 +299,7 @@
   <div class="adsense-publication-nav__inner">
     <h2 id="adsense-publication-nav-title">Lakehouse Contract Lab project evidence</h2>
     <p>Free lakehouse contract checklist for medallion quality gates and rejected-row review. The linked guides are derived from the repository's checked-in documentation, architecture, tests, and release checks.</p>
-    <nav aria-label="Project evidence and policies"><a href="/guide">Project guide</a><a href="/architecture">Architecture</a><a href="/verification">Verification</a><a href="/publisher">Publisher</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav>
+    <nav aria-label="Project evidence and policies"><a href="guide.html">Project guide</a><a href="architecture.html">Architecture</a><a href="verification.html">Verification</a><a href="publisher.html">Publisher</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
   </div>
 </section>
 <!-- adsense-publication-nav:end -->
